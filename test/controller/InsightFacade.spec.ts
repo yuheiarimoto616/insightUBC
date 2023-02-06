@@ -19,10 +19,16 @@ describe("InsightFacade", function () {
 
 	// Declare datasets used in tests. You should add more datasets like this!
 	let sections: string;
+	let singleCourse: string;
+	let nonzip: string;
+	let noCourses: string;
 
 	before(function () {
 		// This block runs once and loads the datasets.
 		sections = getContentFromArchives("pair.zip");
+		singleCourse = getContentFromArchives("small.zip");
+		nonzip = getContentFromArchives("AANB500");
+		noCourses = getContentFromArchives("notCourses.zip");
 
 		// Just in case there is anything hanging around from a previous run of the test suite
 		clearDisk();
@@ -49,6 +55,21 @@ describe("InsightFacade", function () {
 			// This runs after each test, which should make each test independent of the previous one
 			console.info(`AfterTest: ${this.currentTest?.title}`);
 			clearDisk();
+		});
+
+		it ("test", function () {
+			const result = facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.deep.equal(["ubc"]);
+		});
+
+		it ("nonzip", function () {
+			const result = facade.addDataset("ubc", nonzip, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.rejectedWith(InsightError);
+		});
+
+		it ("no courses folder", function () {
+			const result = facade.addDataset("ubc", noCourses, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
 		// This is a unit test. You should create more like this!
