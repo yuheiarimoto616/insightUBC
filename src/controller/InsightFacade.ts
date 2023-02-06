@@ -11,7 +11,6 @@ import Dataset from "./Dataset";
 
 import fs from "fs-extra";
 import JSZip from "jszip";
-import {rejects} from "assert";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -48,7 +47,6 @@ export default class InsightFacade implements IInsightFacade {
 	// TODO: make it shorter; add helpers
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
 		// checks if id is valid
-
 		if (this.isInvalidID(id)) {
 			return Promise.reject(new InsightError("Invalid id"));
 		}
@@ -62,15 +60,13 @@ export default class InsightFacade implements IInsightFacade {
 		} catch (e) {
 			return Promise.reject(new InsightError("Not zip file"));
 		}
-
 		// TODO: fix it (regex); doesn't catch folder name that contains "courses" (such as courses 2)
 		if (zip.folder(/courses/).length === 0) {
 			return Promise.reject(new InsightError("courses folder does not exit"));
 		}
 
-		zip.folder("courses");
-
 		let jobs: any = [];
+		zip.folder("courses");
 		zip.forEach( (relativePath, file) => {
 			if (/^courses\/[^.]+/.test(relativePath)) {
 				let course = zip.file(relativePath);
@@ -81,25 +77,35 @@ export default class InsightFacade implements IInsightFacade {
 
 		const jobResults = await Promise.all(jobs);
 		// TODO: "Is a JSON formatted file"
-		for (const result of jobResults) {
-			let jsonObject = JSON.parse(result);
-			let sections: any[] = jsonObject.result;
-
-			for (let section of sections) {
-				// TODO: check if the section is valid
-				let sec = new Section(section.id, section.Course, section.Title, section. Professor,
-					section.Subject, section.Year, section.Avg, section.Pass, section.Fail, section.Audit);
-
-				dataset.addSection(sec);
-			}
-		}
+		this.addSections(jobResults, dataset);
 
 		// TODO: "contains at least one valid section"
 		this.datasets.push(dataset);
 		for (let ds of this.datasets) {
 			ret.push(ds.getID());
 		}
+
+		try {
+			await fs.outputJson("data/" + id + ".json", dataset);
+		} catch (e) {
+			return Promise.reject(new InsightError("writeJSON failed"));
+		}
+
 		return Promise.resolve(ret);
+	}
+
+	private addSections(jobResults: any, dataset: Dataset) {
+		for (const result of jobResults) {
+			let jsonObject = JSON.parse(result);
+			let sections: any[] = jsonObject.result;
+
+			for (let section of sections) {
+				// TODO: check if the section is valid
+				let sec = new Section(section.id, section.Course, section.Title, section.Professor,
+					section.Subject, section.Year, section.Avg, section.Pass, section.Fail, section.Audit);
+				dataset.addSection(sec);
+			}
+		}
 	}
 
 	public removeDataset(id: string): Promise<string> {
