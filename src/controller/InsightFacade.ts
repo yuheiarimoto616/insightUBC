@@ -30,20 +30,30 @@ export default class InsightFacade implements IInsightFacade {
 		// }
 	}
 
-	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
-		// checks if id is valid
-		let idString = new RegExp("[^_]+");
-		if (!idString.test(id)) {
-			return Promise.reject(new InsightError("Invalid id"));
+	public isInvalidID(id: string): boolean {
+		if (!/[^_]+/.test(id)) {
+			return true;
 		}
 
 		// TODO: test
 		for (let ds of this.datasets) {
 			if (id === ds.getID()) {
-				return Promise.reject(new InsightError("id already exists"));
+				return true;
 			}
 		}
 
+		return false;
+	}
+
+	// TODO: make it shorter; add helpers
+	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
+		// checks if id is valid
+
+		if (this.isInvalidID(id)) {
+			return Promise.reject(new InsightError("Invalid id"));
+		}
+
+		let ret: string[] = [];
 		let dataset = new Dataset(id, kind);
 		let zip = new JSZip();
 
@@ -60,16 +70,36 @@ export default class InsightFacade implements IInsightFacade {
 
 		zip.folder("courses");
 
-		zip.forEach(function (relativePath, file){
-			if (!(relativePath.includes("MACOSX") || relativePath.includes("DS_Store"))) {
-				let a = zip.file(relativePath);
-				a?.async("string").then(function (st) {
-					console.log(JSON.parse(st));
-				});
+		let jobs: any = [];
+		zip.forEach( (relativePath, file) => {
+			if (/^courses\/[^.]+/.test(relativePath)) {
+				let course = zip.file(relativePath);
+
+				jobs.push(course?.async("string"));
 			}
 		});
 
-		return Promise.reject(new InsightError("done"));
+		const jobResults = await Promise.all(jobs);
+		// TODO: "Is a JSON formatted file"
+		for (const result of jobResults) {
+			let jsonObject = JSON.parse(result);
+			let sections: any[] = jsonObject.result;
+
+			for (let section of sections) {
+				// TODO: check if the section is valid
+				let sec = new Section(section.id, section.Course, section.Title, section. Professor,
+					section.Subject, section.Year, section.Avg, section.Pass, section.Fail, section.Audit);
+
+				dataset.addSection(sec);
+			}
+		}
+
+		// TODO: "contains at least one valid section"
+		this.datasets.push(dataset);
+		for (let ds of this.datasets) {
+			ret.push(ds.getID());
+		}
+		return Promise.resolve(ret);
 	}
 
 	public removeDataset(id: string): Promise<string> {

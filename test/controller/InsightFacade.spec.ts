@@ -26,7 +26,7 @@ describe("InsightFacade", function () {
 	before(function () {
 		// This block runs once and loads the datasets.
 		sections = getContentFromArchives("pair.zip");
-		singleCourse = getContentFromArchives("singleCourse.zip");
+		singleCourse = getContentFromArchives("small.zip");
 		nonzip = getContentFromArchives("AANB500");
 		noCourses = getContentFromArchives("notCourses.zip");
 
@@ -58,13 +58,13 @@ describe("InsightFacade", function () {
 		});
 
 		it ("test", function () {
-			const result = facade.addDataset("ubc", singleCourse, InsightDatasetKind.Sections);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
+			const result = facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.deep.equal(["ubc"]);
 		});
 
 		it ("nonzip", function () {
 			const result = facade.addDataset("ubc", nonzip, InsightDatasetKind.Sections);
-			return expect(result).to.equal("");
+			return expect(result).to.eventually.rejectedWith(InsightError);
 		});
 
 		it ("no courses folder", function () {
