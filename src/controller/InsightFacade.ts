@@ -30,7 +30,9 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public isInvalidID(id: string): boolean {
-		if (!/[^_]+/.test(id)) {
+		let invalid = new RegExp(/^[^_]+$/);
+		let onlySpace = new RegExp(/^\s*$/);
+		if (!invalid.test(id) || onlySpace.test(id)) {
 			return true;
 		}
 
@@ -108,8 +110,31 @@ export default class InsightFacade implements IInsightFacade {
 		}
 	}
 
-	public removeDataset(id: string): Promise<string> {
-		return Promise.reject("Not implemented.");
+	public async removeDataset(id: string): Promise<string> {
+		let invalid = new RegExp(/^[^_]+$/);
+		let onlySpace = new RegExp(/^\s*$/);
+
+		if (!invalid.test(id) || onlySpace.test(id)) {
+			return Promise.reject(new InsightError("Invalid id"));
+		}
+
+		for (let i = 0; i <= this.datasets.length; i++) {
+			if (i === this.datasets.length) {
+				return Promise.reject(new NotFoundError("dataset with the given id does not exist"));
+			}
+			if (this.datasets[i].getID() === id) {
+				this.datasets.splice(i, 1);
+				break;
+			}
+		}
+
+		try {
+			await fs.remove("data/" + id + ".json");
+		} catch (e) {
+			return Promise.reject(new InsightError(""));
+		}
+
+		return Promise.resolve(id);
 	}
 
 	public performQuery(query: unknown): Promise<InsightResult[]> {
@@ -117,7 +142,7 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public listDatasets(): Promise<InsightDataset[]> {
-		let ret: InsightDataset[] = [];
+		const ret: InsightDataset[] = [];
 		for (let ds of this.datasets) {
 			let iDataset: InsightDataset = {
 				id: ds.getID(),
