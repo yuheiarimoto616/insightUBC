@@ -9,7 +9,7 @@ import {
 import Section from "./Section";
 import Dataset from "./Dataset";
 
-import fs from "fs-extra";
+import fs, {readJson} from "fs-extra";
 import JSZip from "jszip";
 
 /**
@@ -22,11 +22,20 @@ export default class InsightFacade implements IInsightFacade {
 
 	constructor() {
 		this.datasets = [];
-		// let files: string[] = fs.readdirSync("./data");
-		// for (let file of files) {
-		// 	const packageObj = fs.readJsonSync(file);
-		//
-		// }
+
+		if(fs.existsSync("data")) {
+			fs.readdirSync("data").forEach((value) => {
+				let jsonObject = fs.readJsonSync("data/" + value);
+
+				let ds = new Dataset(jsonObject.id, jsonObject.kind);
+				for (let s of jsonObject.sections) {
+					let section: Section = new Section(s.id, s.Course, s.Title, s.Professor,
+						s.Subject, s.Year, s.Avg, s.Pass, s.Fail, s.Audit);
+					ds.addSection(section);
+				}
+				this.datasets.push(ds);
+			});
+		}
 	}
 
 	public isInvalidID(id: string): boolean {
