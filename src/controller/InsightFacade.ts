@@ -138,6 +138,35 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public performQuery(query: unknown): Promise<InsightResult[]> {
+		let filteredDataset = [];
+		let filteredArray = [];
+
+		if (this.validateQueryKeys(query)) {
+			if (this.evaluateQueryKeys(query)) {
+				let where = query["WHERE"];
+				let options = query["OPTIONS"];
+				// TODO Obtain datasetID first we need to checks [OPTIONS] first
+				if (this.validateQueryKeys(options)) {
+					let order = options["ORDER"];
+					let columns = options["COLUMNS"];
+					let columnLine = JSON.stringify(columns);
+					const iD = this.datasets[1].getID(); // TODO Don't know how to get each ID from dataset (For loop?)
+						// TODO check [WHERE] after
+						// TODO I branch into right side of "sections (ubc)"
+					if (this.validateQueryKeys(where)) {
+							// TODO Filter "OR AND NOT GT LT EQ"
+							// TODO In filter recursively check for query operator (E.g.: OR AND NOT)
+							// TODO getDatasetID to check for "sections (ubc)"
+
+							// TODO Filter Columns via right column of "sections"
+							// TODO Sort helper that sorts out the columns (COLUMNS VS ORDER)
+							// TODO return filteredDataset (via Promise.resolve(filteredDataset))
+					}
+				}
+			}
+		}
+
+
 		return Promise.reject("Not implemented.");
 	}
 
@@ -155,4 +184,28 @@ export default class InsightFacade implements IInsightFacade {
 
 		return Promise.resolve(ret);
 	}
+
+	/* Helper Function for performQuery */
+
+	// TODO Returns the filtered query after being filtered by the section.
+	public filterQuery(next: unknown, dataset: any[]): any[] {
+		return [];
+	}
+
+	// TODO Checks to see if the queries have proper EBNF query format. E.g.: [Options] and [Where]
+	public validateQueryKeys(query: unknown): query is Record<string, unknown>  {
+		return false;
+	}
+
+	// TODO Checks to see if it has the following EBNF query keys.
+	public evaluateQueryKeys(query: unknown): boolean {
+		return false;
+	}
+
+	// TODO Returns the filtered query after being filtered by the section.
+	public getDatasetSections(section: unknown, dataset: Dataset): string {
+		return "";
+	}
+
+
 }
