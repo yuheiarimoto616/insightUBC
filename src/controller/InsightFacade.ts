@@ -11,6 +11,7 @@ import Dataset from "./Dataset";
 
 import fs, {readJson} from "fs-extra";
 import JSZip from "jszip";
+import QueryEBNF from "./QueryEBNF";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -45,7 +46,6 @@ export default class InsightFacade implements IInsightFacade {
 			return true;
 		}
 
-		// TODO: test
 		for (let ds of this.datasets) {
 			if (id === ds.getID()) {
 				return true;
@@ -147,6 +147,24 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public performQuery(query: unknown): Promise<InsightResult[]> {
+		let queryEBNF = new QueryEBNF();
+		if (!queryEBNF.validateQuery(query)) {
+			return Promise.reject(new InsightError("Invalid Query"));
+		}
+
+		let referencedDataset = null;
+		for (let ds of this.datasets) {
+			if (ds.getID() === queryEBNF.getReferencedID()) {
+				referencedDataset = ds.getSections();
+			}
+		}
+
+		if (referencedDataset == null) {
+			return Promise.reject(new InsightError("Referencing a dataset not added"));
+		}
+
+		let result: Section[] = queryEBNF.executeQuery(referencedDataset);
+
 		return Promise.reject("Not implemented.");
 	}
 

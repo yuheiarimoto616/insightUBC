@@ -11,8 +11,55 @@ import {folderTest} from "@ubccpsc310/folder-test";
 import {expect, use} from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {clearDisk, getContentFromArchives} from "../TestUtil";
+import QueryEBNF from "../../src/controller/QueryEBNF";
 
 use(chaiAsPromised);
+
+describe("QueryEBNF", function () {
+	let queryEBNF: QueryEBNF;
+
+	beforeEach(function () {
+		queryEBNF = new QueryEBNF();
+	});
+
+	it ("test", function() {
+		let query: any = {
+			WHERE:{
+				OR:[
+					{
+						AND:[
+							{
+								GT:{
+									ubc_avg:90
+								}
+							},
+							{
+								IS:{
+									ubc_dept:"adhe"
+								}
+							}
+						]
+					},
+					{
+						EQ:{
+							ubc_avg: 95
+						}
+					}
+				]
+			},
+			OPTIONS:{
+				COLUMNS:[
+					"ubc_dept",
+					"ubc_id",
+					"ubc_avg"
+				],
+				ORDER:"ubc_avg"
+			}
+		};
+		const result = queryEBNF.validateQuery(query);
+		expect(result).equal(true);
+	});
+});
 
 describe("InsightFacade", function () {
 	let facade: IInsightFacade;
@@ -56,7 +103,7 @@ describe("InsightFacade", function () {
 			// This section resets the data directory (removing any cached data)
 			// This runs after each test, which should make each test independent of the previous one
 			console.info(`AfterTest: ${this.currentTest?.title}`);
-			clearDisk();
+			// clearDisk();
 		});
 
 		// addDataset
