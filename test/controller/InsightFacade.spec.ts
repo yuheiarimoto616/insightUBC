@@ -61,7 +61,7 @@ describe("InsightFacade", function () {
 
 		// addDataset
 		it ("test", function () {
-			const result = facade.addDataset("ubc", small, InsightDatasetKind.Sections);
+			const result = facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.deep.equal(["ubc"]);
 		});
 
@@ -116,7 +116,7 @@ describe("InsightFacade", function () {
 
 		// removeDataset
 		it ("should resolve when only dataset",  async function () {
-			await facade.addDataset("ubc", small, InsightDatasetKind.Sections);
+			await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
 			const result = facade.removeDataset("ubc");
 
 			return expect(result).to.eventually.equal("ubc");
@@ -180,7 +180,7 @@ describe("InsightFacade", function () {
 
 		it ("should resolve with multiple dataset", async function () {
 			// maybe not use sections too big
-			await facade.addDataset("ubc", small, InsightDatasetKind.Sections);
+			await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
 			await facade.addDataset("ubcv", singleCourse, InsightDatasetKind.Sections);
 
 			const result = facade.listDatasets();
@@ -189,7 +189,7 @@ describe("InsightFacade", function () {
 				{
 					id: "ubc",
 					kind: InsightDatasetKind.Sections,
-					numRows: 86
+					numRows: 64612
 				},
 				{
 					id: "ubcv",
