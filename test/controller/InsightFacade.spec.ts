@@ -11,15 +11,15 @@ import {folderTest} from "@ubccpsc310/folder-test";
 import {expect, use} from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {clearDisk, getContentFromArchives} from "../TestUtil";
-import QueryEBNF from "../../src/controller/QueryEBNF";
+import QueryParserValidator from "../../src/controller/QueryParserValidator";
 
 use(chaiAsPromised);
 
-describe("QueryEBNF", function () {
-	let queryEBNF: QueryEBNF;
+describe("QueryParserValidator", function () {
+	let queryParserValidator: QueryParserValidator;
 
 	beforeEach(function () {
-		queryEBNF = new QueryEBNF();
+		queryParserValidator = new QueryParserValidator();
 	});
 
 	it ("test", function() {
@@ -35,7 +35,7 @@ describe("QueryEBNF", function () {
 							},
 							{
 								IS:{
-									ubc_dept:"adhe"
+									ubc_dept:"cpsc"
 								}
 							}
 						]
@@ -56,7 +56,7 @@ describe("QueryEBNF", function () {
 				ORDER:"ubc_avg"
 			}
 		};
-		const result = queryEBNF.validateQuery(query);
+		const result = queryParserValidator.validateQuery(query);
 		expect(result).equal(true);
 	});
 });
