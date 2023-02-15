@@ -4,7 +4,7 @@ import {
 	InsightDatasetKind,
 	InsightError,
 	InsightResult,
-	NotFoundError
+	NotFoundError, ResultTooLargeError
 } from "./IInsightFacade";
 import Section from "./Section";
 import Dataset from "./Dataset";
@@ -12,7 +12,7 @@ import Dataset from "./Dataset";
 import fs, {readJson} from "fs-extra";
 import JSZip from "jszip";
 import QueryParserValidator from "./QueryParserValidator";
-import QueryExecuter from "./QueryExecuter";
+import QueryExecutor from "./QueryExecutor";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -112,8 +112,9 @@ export default class InsightFacade implements IInsightFacade {
 
 			for (let section of sections) {
 				// TODO: check if the section is valid
-				let sec = new Section(section.id, section.Course, section.Title, section.Professor,
-					section.Subject, section.Year, section.Avg, section.Pass, section.Fail, section.Audit);
+				let sec = new Section(section.id + "", section.Course + "", section.Title + "",
+					section.Professor + "", section.Subject + "", section.Year * 1,
+					section.Avg * 1, section.Pass * 1, section.Fail * 1, section.Audit * 1);
 				dataset.addSection(sec);
 			}
 		}
@@ -165,11 +166,14 @@ export default class InsightFacade implements IInsightFacade {
 			return Promise.reject(new InsightError("Referencing a dataset not added"));
 		}
 
-		let queryExecuter = new QueryExecuter(queryParserValidator.getQuery());
-		ret = queryExecuter.executeQuery(referencedDataset);
+		let queryExecuter = new QueryExecutor(queryParserValidator.getQuery());
+		try {
+			ret = queryExecuter.executeQuery(referencedDataset);
+		} catch (e) {
+			return Promise.reject(new ResultTooLargeError(e as string));
+		}
 
-
-		return Promise.reject("Not implemented.");
+		return Promise.resolve(ret);
 	}
 
 	public listDatasets(): Promise<InsightDataset[]> {

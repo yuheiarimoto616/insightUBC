@@ -1,0 +1,18 @@
+{
+	"title": "should rejected with zero key in not",
+	"input": {
+		"WHERE": {
+			"NOT": {}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sections_title",
+				"sections_pass"
+			],
+			"ORDER": "sections_pass"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

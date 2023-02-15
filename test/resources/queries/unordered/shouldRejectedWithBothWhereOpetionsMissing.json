@@ -1,0 +1,6 @@
+{
+	"title": "should rejected with both where opetions missing",
+	"input": {},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

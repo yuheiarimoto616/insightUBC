@@ -1,0 +1,20 @@
+{
+	"title": "should rejected with dash instead of underscore",
+	"input": {
+		"WHERE": {
+			"EQ": {
+				"sections-avg": 87
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sections_title",
+				"sections_avg"
+			],
+			"ORDER": "sections_avg"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

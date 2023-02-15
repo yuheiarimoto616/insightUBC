@@ -1,0 +1,17 @@
+{
+	"title": "should rejected with impossible year value",
+	"input": {
+		"WHERE": {
+			"EQ": {
+				"sections_year": 0
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_avg"
+			]
+		}
+	},
+	"errorExpected": false,
+	"expected": []
+}

@@ -1,0 +1,17 @@
+{
+	"title": "should rejected with impossible avg number",
+	"input": {
+		"WHERE": {
+			"GT": {
+				"sections_avg": 200
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_avg"
+			]
+		}
+	},
+	"errorExpected": false,
+	"expected": []
+}
