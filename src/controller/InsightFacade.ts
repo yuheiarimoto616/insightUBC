@@ -11,6 +11,8 @@ import Dataset from "./Dataset";
 
 import fs, {readJson} from "fs-extra";
 import JSZip from "jszip";
+import QueryParserValidator from "./QueryParserValidator";
+import QueryExecuter from "./QueryExecuter";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -45,7 +47,6 @@ export default class InsightFacade implements IInsightFacade {
 			return true;
 		}
 
-		// TODO: test
 		for (let ds of this.datasets) {
 			if (id === ds.getID()) {
 				return true;
@@ -55,7 +56,6 @@ export default class InsightFacade implements IInsightFacade {
 		return false;
 	}
 
-	// TODO: make it shorter; add helpers
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
 		// checks if id is valid
 		if (this.isInvalidID(id)) {
@@ -147,6 +147,27 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public performQuery(query: unknown): Promise<InsightResult[]> {
+		let ret: InsightResult[] = [];
+
+		let queryParserValidator = new QueryParserValidator();
+		if (!queryParserValidator.validateQuery(query)) {
+			return Promise.reject(new InsightError("Invalid Query"));
+		}
+
+		let referencedDataset = null;
+		for (let ds of this.datasets) {
+			if (ds.getID() === queryParserValidator.getReferencedID()) {
+				referencedDataset = ds.getSections();
+			}
+		}
+
+		if (referencedDataset == null) {
+			return Promise.reject(new InsightError("Referencing a dataset not added"));
+		}
+
+		let queryExecuter = new QueryExecuter(queryParserValidator.getQuery());
+		let result: Section[] = queryExecuter.executeQuery(referencedDataset);
+
 		return Promise.reject("Not implemented.");
 	}
 
