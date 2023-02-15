@@ -16,48 +16,35 @@ import QueryParserValidator from "../../src/controller/QueryParserValidator";
 use(chaiAsPromised);
 
 describe("QueryParserValidator", function () {
-	let queryParserValidator: QueryParserValidator;
+	let sections: string;
+	let facade: InsightFacade;
 
 	beforeEach(function () {
-		queryParserValidator = new QueryParserValidator();
+		sections = getContentFromArchives("singleCourse.zip");
+		facade = new InsightFacade();
+		clearDisk();
 	});
 
-	it ("test", function() {
+	it ("test", async function () {
 		let query: any = {
-			WHERE:{
-				OR:[
-					{
-						AND:[
-							{
-								GT:{
-									ubc_avg:90
-								}
-							},
-							{
-								IS:{
-									ubc_dept:"cpsc"
-								}
-							}
-						]
-					},
-					{
-						EQ:{
-							ubc_avg: 95
-						}
+			WHERE: {
+				NOT: {
+					IS: {
+						ubc_uuid: "85401"
 					}
-				]
+				}
 			},
-			OPTIONS:{
-				COLUMNS:[
+			OPTIONS: {
+				COLUMNS: [
 					"ubc_dept",
-					"ubc_id",
+					"ubc_uuid",
 					"ubc_avg"
-				],
-				ORDER:"ubc_avg"
+				]
 			}
 		};
 
-		const result = queryParserValidator.validateQuery(query);
+		await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
+		const result = facade.performQuery(query);
 		expect(result).equal(true);
 	});
 });
@@ -104,7 +91,7 @@ describe("InsightFacade", function () {
 			// This section resets the data directory (removing any cached data)
 			// This runs after each test, which should make each test independent of the previous one
 			console.info(`AfterTest: ${this.currentTest?.title}`);
-			// clearDisk();
+			clearDisk();
 		});
 
 		// addDataset
@@ -281,12 +268,18 @@ describe("InsightFacade", function () {
 			"./test/resources/queries",
 			{
 				assertOnResult: (actual, expected) => {
-					// TODO add an assertion!
+					expect(actual).to.deep.equal(expected);
 				},
 				errorValidator: (error): error is PQErrorKind =>
 					error === "ResultTooLargeError" || error === "InsightError",
 				assertOnError: (actual, expected) => {
-					// TODO add an assertion!
+					if (expected === "InsightError") {
+						expect(actual).to.be.instanceof(InsightError);
+					} else if (expected === "ResultTooLargeError") {
+						expect(actual).to.be.instanceof(ResultTooLargeError);
+					} else {
+						expect.fail("UNEXPECTED ERROR");
+					}
 				},
 			}
 		);

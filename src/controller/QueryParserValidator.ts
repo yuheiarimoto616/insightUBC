@@ -122,7 +122,7 @@ export default class QueryParserValidator {
 		if (this.validateKey(Object.keys(content)[0], Key.mkey) && (typeof Object.values(content)[0] === "number")) {
 			let mcom: MCOMPARISON = {
 				MCOMPARATOR: mcomparator,
-				mkey: Object.keys(content)[0],
+				mkey: Object.keys(content)[0].split("_")[1],
 				num: Object.values(content)[0] as number
 			};
 			return mcom;
@@ -144,7 +144,7 @@ export default class QueryParserValidator {
 			&& this.inputstring.test(Object.values(content)[0] as string)) {
 			let scom: SCOMPARISON = {
 				IS: {
-					skey: Object.keys(content)[0],
+					skey: Object.keys(content)[0].split("_")[1],
 					inputString: Object.values(content)[0] as string
 				}
 			};

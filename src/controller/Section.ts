@@ -1,26 +1,110 @@
 export default class Section {
-	private readonly id: string;
-	private readonly Course: string;
-	private readonly Title: string;
-	private readonly Professor: string;
-	private readonly Subject: string;
-	private readonly Year: number;
-	private readonly Avg: number;
-	private readonly Pass: number;
-	private readonly Fail: number;
-	private readonly Audit: number;
+	private readonly _id: string;
+	private readonly _Course: string;
+	private readonly _Title: string;
+	private readonly _Professor: string;
+	private readonly _Subject: string;
+	private readonly _Year: number;
+	private readonly _Avg: number;
+	private readonly _Pass: number;
+	private readonly _Fail: number;
+	private readonly _Audit: number;
 
 	constructor(id: string, course: string, title: string, professor: string, subject: string, year: number,
 		avg: number, pass: number, fail: number, audit: number) {
-		this.id = id;
-		this.Course = course;
-		this.Title = title;
-		this.Professor = professor;
-		this.Subject = subject;
-		this.Year = year;
-		this.Avg = avg;
-		this.Pass = pass;
-		this.Fail = fail;
-		this.Audit = audit;
+		this._id = id;
+		this._Course = course;
+		this._Title = title;
+		this._Professor = professor;
+		this._Subject = subject;
+		this._Year = year;
+		this._Avg = avg;
+		this._Pass = pass;
+		this._Fail = fail;
+		this._Audit = audit;
+	}
+
+	public getSectionField(field: string) {
+		switch (field) {
+			case "avg": {
+				return this._Avg;
+			}
+			case "pass": {
+				return this._Pass;
+			}
+			case "fail": {
+				return this._Fail;
+			}
+			case "audit": {
+				return this._Audit;
+			}
+			case "year": {
+				return this._Year;
+			}
+			case "dept": {
+				return this._Subject;
+			}
+			case "id": {
+				return this._Course;
+			}
+			case "instructor": {
+				return this._Professor;
+			}
+			case "title": {
+				return this._Title;
+			}
+			case "uuid": {
+				return this._id;
+			}
+			default: { // impossible; should not be called
+				return 0;
+			}
+		}
+	}
+
+	public getSectionMField(mfield: string) {
+		switch (mfield) {
+			case "avg": {
+				return this._Avg;
+			}
+			case "pass": {
+				return this._Pass;
+			}
+			case "fail": {
+				return this._Fail;
+			}
+			case "audit": {
+				return this._Audit;
+			}
+			case "year": {
+				return this._Year;
+			}
+			default: { // impossible; should not be called
+				return 0;
+			}
+		}
+	}
+
+	public getSectionSField(sfield: string) {
+		switch (sfield) {
+			case "dept": {
+				return this._Subject;
+			}
+			case "id": {
+				return this._Course;
+			}
+			case "instructor": {
+				return this._Professor;
+			}
+			case "title": {
+				return this._Title;
+			}
+			case "uuid": {
+				return this._id;
+			}
+			default: { // impossible; should not be called
+				return "";
+			}
+		}
 	}
 }
