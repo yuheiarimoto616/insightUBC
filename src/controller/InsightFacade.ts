@@ -166,7 +166,8 @@ export default class InsightFacade implements IInsightFacade {
 		}
 
 		let queryExecuter = new QueryExecuter(queryParserValidator.getQuery());
-		let result: Section[] = queryExecuter.executeQuery(referencedDataset);
+		ret = queryExecuter.executeQuery(referencedDataset);
+
 
 		return Promise.reject("Not implemented.");
 	}

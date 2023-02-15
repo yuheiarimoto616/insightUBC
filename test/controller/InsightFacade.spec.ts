@@ -56,6 +56,7 @@ describe("QueryParserValidator", function () {
 				ORDER:"ubc_avg"
 			}
 		};
+
 		const result = queryParserValidator.validateQuery(query);
 		expect(result).equal(true);
 	});
