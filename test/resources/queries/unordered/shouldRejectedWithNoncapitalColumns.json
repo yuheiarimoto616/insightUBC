@@ -1,0 +1,18 @@
+{
+	"title": "should rejected with noncapital columns",
+	"input": {
+		"WHERE": {
+			"GT": {
+				"sections_avg": 95
+			}
+		},
+		"OPTIONS": {
+			"columns": [
+				"sections_dept",
+				"sections_title"
+			]
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

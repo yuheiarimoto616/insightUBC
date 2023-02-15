@@ -1,0 +1,168 @@
+{
+	"title": "should resolve with wildcard in front",
+	"input": {
+		"WHERE": {
+			"AND": [
+				{
+					"IS": {
+						"sections_dept": "*th"
+					}
+				},
+				{
+					"IS": {
+						"sections_id": "110"
+					}
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sections_title"
+			]
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		},
+		{
+			"sections_dept": "math",
+			"sections_title": "diff calculus"
+		}
+	]
+}

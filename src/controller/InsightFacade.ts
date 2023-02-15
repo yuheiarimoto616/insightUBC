@@ -12,7 +12,7 @@ import Dataset from "./Dataset";
 import fs, {readJson} from "fs-extra";
 import JSZip from "jszip";
 import QueryParserValidator from "./QueryParserValidator";
-import QueryExecuter from "./QueryExecuter";
+import QueryExecutor from "./QueryExecutor";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -166,7 +166,7 @@ export default class InsightFacade implements IInsightFacade {
 			return Promise.reject(new InsightError("Referencing a dataset not added"));
 		}
 
-		let queryExecuter = new QueryExecuter(queryParserValidator.getQuery());
+		let queryExecuter = new QueryExecutor(queryParserValidator.getQuery());
 		try {
 			ret = queryExecuter.executeQuery(referencedDataset);
 		} catch (e) {

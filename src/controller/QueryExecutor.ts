@@ -1,8 +1,9 @@
 import {Body, Filter, LOGICCOMPARISON, MCOMPARISON, NEGATION, Options, Query, SCOMPARISON} from "./QueryEBNF";
 import Section from "./Section";
 import {InsightResult, ResultTooLargeError} from "./IInsightFacade";
+import {strict} from "assert";
 
-export default class QueryExecuter {
+export default class QueryExecutor {
 	private query: Query;
 	constructor(query: Query) {
 		this.query = query;
@@ -20,14 +21,17 @@ export default class QueryExecuter {
 
 	private executeWhere(where: Body, sections: Section[]): Section[] {
 		let ret: Section[] = [];
-		if (where.WHERE == null) {
+		if (where.WHERE === null) {
+			if (sections.length > 5000) {
+				throw new ResultTooLargeError("result has more than 5000");
+			}
 			return sections;
 		}
 
 		for (let s of sections) {
 			if (this.executeFilter(s, where.WHERE)) {
 				if (ret.length >= 5000) {
-					throw new ResultTooLargeError("result has more 5000");
+					throw new ResultTooLargeError("result has more than 5000");
 				}
 				ret.push(s);
 			}
@@ -125,7 +129,15 @@ export default class QueryExecuter {
 
 	// string -> alphabetical ; number -> ascending
 	public orderQuery(order: string, result: InsightResult[]): InsightResult[] {
-		return result; // stub
+		if (typeof result[0][order] === "string") {
+			// got idea from https://stackoverflow.com/questions/6712034/sort-array-by-firstname-alphabetically-in-javascript
+			result.sort((a, b) =>
+				(a[order] as string).localeCompare(b[order] as string));
+		} else {
+			result.sort((a, b) => ((a[order] as number) - (b[order] as number)));
+		}
+
+		return result;
 	}
 
 	public instanceOfLogicCom (object: any): object is LOGICCOMPARISON {

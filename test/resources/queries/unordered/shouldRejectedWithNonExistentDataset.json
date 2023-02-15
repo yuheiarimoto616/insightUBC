@@ -1,0 +1,19 @@
+{
+	"title": "should rejected with non existent dataset",
+	"input": {
+		"WHERE": {
+			"GT": {
+				"sfu_avg": 97
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sfu_dept",
+				"sfu_avg"
+			],
+			"ORDER": "sfu_avg"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

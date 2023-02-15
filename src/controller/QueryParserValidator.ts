@@ -198,17 +198,18 @@ export default class QueryParserValidator {
 			|| (type === "skey" && this.SFIELD.includes(splits[1]));
 	}
 
+	// order of the keys does not matter; column can come first or second
 	public validateOptions(options: any) {
 		if (Object.keys(options).length === 0 || Object.keys(options).length > 2) {
 			return false;
 		}
 
-		if (Object.keys(options)[0] !== "COLUMNS") {
+		if (!Object.hasOwn(options, "COLUMNS")) {
 			return false;
 		}
 
 		let columns = options.COLUMNS;
-		if (!Array.isArray(columns)) {
+		if (!Array.isArray(columns) || columns.length === 0) {
 			return false;
 		}
 
@@ -221,7 +222,7 @@ export default class QueryParserValidator {
 		}
 
 		if (Object.keys(options).length === 2) {
-			if (Object.keys(options)[1] !== "ORDER") {
+			if (!Object.hasOwn(options, "ORDER")) {
 				return false;
 			}
 

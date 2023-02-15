@@ -1,0 +1,6 @@
+{
+	"title": "should rejected with empty input",
+	"input": "",
+	"errorExpected": true,
+	"expected": "InsightError"
+}
