@@ -91,7 +91,7 @@ describe("InsightFacade", function () {
 			// This section resets the data directory (removing any cached data)
 			// This runs after each test, which should make each test independent of the previous one
 			console.info(`AfterTest: ${this.currentTest?.title}`);
-			// clearDisk();
+			clearDisk();
 		});
 
 		// costructor
