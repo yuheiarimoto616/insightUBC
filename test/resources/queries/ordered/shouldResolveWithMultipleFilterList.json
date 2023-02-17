@@ -1,0 +1,295 @@
+{
+	"title": "should resolve with multiple filter list",
+	"input": {
+		"WHERE": {
+			"AND": [
+				{
+					"GT": {
+						"sections_avg": 90
+					}
+				},
+				{
+					"IS": {
+						"sections_dept": "cpsc"
+					}
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sections_title",
+				"sections_avg",
+				"sections_uuid"
+			],
+			"ORDER": "sections_uuid"
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "student seminar",
+			"sections_avg": 92.4,
+			"sections_uuid": "1354"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "student seminar",
+			"sections_avg": 92.4,
+			"sections_uuid": "1355"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "machine learn i",
+			"sections_avg": 91.22,
+			"sections_uuid": "1376"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "machine learn i",
+			"sections_avg": 91.22,
+			"sections_uuid": "1377"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "m.sc major essay",
+			"sections_avg": 95,
+			"sections_uuid": "1385"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "m.sc major essay",
+			"sections_avg": 95,
+			"sections_uuid": "1386"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "honours thesis",
+			"sections_avg": 92.63,
+			"sections_uuid": "46756"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "honours thesis",
+			"sections_avg": 92.63,
+			"sections_uuid": "46757"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "thry of automata",
+			"sections_avg": 92.43,
+			"sections_uuid": "46762"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "thry of automata",
+			"sections_avg": 92.43,
+			"sections_uuid": "46763"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "honours thesis",
+			"sections_avg": 93.38,
+			"sections_uuid": "49956"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "honours thesis",
+			"sections_avg": 93.38,
+			"sections_uuid": "49957"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "student seminar",
+			"sections_avg": 90.6,
+			"sections_uuid": "49958"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "student seminar",
+			"sections_avg": 90.6,
+			"sections_uuid": "49959"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "software eng",
+			"sections_avg": 91.79,
+			"sections_uuid": "49966"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "software eng",
+			"sections_avg": 91.79,
+			"sections_uuid": "49967"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "student seminar",
+			"sections_avg": 90.27,
+			"sections_uuid": "52065"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "student seminar",
+			"sections_avg": 90.14,
+			"sections_uuid": "52067"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "alg in bioin",
+			"sections_avg": 91.25,
+			"sections_uuid": "61179"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "alg in bioin",
+			"sections_avg": 91.25,
+			"sections_uuid": "61180"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "honours thesis",
+			"sections_avg": 93.5,
+			"sections_uuid": "61186"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "honours thesis",
+			"sections_avg": 93.5,
+			"sections_uuid": "61187"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "honours thesis",
+			"sections_avg": 90.25,
+			"sections_uuid": "62446"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "honours thesis",
+			"sections_avg": 90.25,
+			"sections_uuid": "62447"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "comp comm protcl",
+			"sections_avg": 91.22,
+			"sections_uuid": "62468"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "comp comm protcl",
+			"sections_avg": 91.22,
+			"sections_uuid": "62469"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "machine learn i",
+			"sections_avg": 90.53,
+			"sections_uuid": "62474"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "machine learn i",
+			"sections_avg": 90.53,
+			"sections_uuid": "62475"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "student seminar",
+			"sections_avg": 92,
+			"sections_uuid": "72424"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "student seminar",
+			"sections_avg": 92,
+			"sections_uuid": "72425"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "thry of automata",
+			"sections_avg": 91,
+			"sections_uuid": "72428"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "thry of automata",
+			"sections_avg": 91,
+			"sections_uuid": "72429"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "honours thesis",
+			"sections_avg": 92.5,
+			"sections_uuid": "83491"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "honours thesis",
+			"sections_avg": 92.5,
+			"sections_uuid": "83492"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "thry of automata",
+			"sections_avg": 92.75,
+			"sections_uuid": "83495"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "thry of automata",
+			"sections_avg": 92.75,
+			"sections_uuid": "83496"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "artif intell 2",
+			"sections_avg": 90.71,
+			"sections_uuid": "83519"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "artif intell 2",
+			"sections_avg": 90.71,
+			"sections_uuid": "83520"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "thry of automata",
+			"sections_avg": 94,
+			"sections_uuid": "90603"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "thry of automata",
+			"sections_avg": 94,
+			"sections_uuid": "90604"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "computl ling 1",
+			"sections_avg": 94.5,
+			"sections_uuid": "90607"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "computl ling 1",
+			"sections_avg": 94.5,
+			"sections_uuid": "90608"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "comp comm protcl",
+			"sections_avg": 90.11,
+			"sections_uuid": "90629"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_title": "comp comm protcl",
+			"sections_avg": 90.11,
+			"sections_uuid": "90630"
+		}
+	]
+}
