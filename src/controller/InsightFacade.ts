@@ -4,12 +4,13 @@ import {
 	InsightDatasetKind,
 	InsightError,
 	InsightResult,
-	NotFoundError, ResultTooLargeError
+	NotFoundError,
+	ResultTooLargeError
 } from "./IInsightFacade";
 import Section from "./Section";
 import Dataset from "./Dataset";
 
-import fs, {readJson} from "fs-extra";
+import fs from "fs-extra";
 import JSZip from "jszip";
 import QueryParserValidator from "./QueryParserValidator";
 import QueryExecutor from "./QueryExecutor";
@@ -31,8 +32,8 @@ export default class InsightFacade implements IInsightFacade {
 
 				let ds = new Dataset(jsonObject.id, jsonObject.kind);
 				for (let s of jsonObject.sections) {
-					let section: Section = new Section(s.id, s.Course, s.Title, s.Professor,
-						s.Subject, s.Year, s.Avg, s.Pass, s.Fail, s.Audit);
+					let section: Section = new Section(s._id, s._Course, s._Title, s._Professor,
+						s._Subject, s._Year, s._Avg, s._Pass, s._Fail, s._Audit);
 					ds.addSection(section);
 				}
 				this.datasets.push(ds);
@@ -56,10 +57,15 @@ export default class InsightFacade implements IInsightFacade {
 		return false;
 	}
 
+	// TODO: kind = room invalid
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
 		// checks if id is valid
 		if (this.isInvalidID(id)) {
 			return Promise.reject(new InsightError("Invalid id"));
+		}
+
+		if (kind === InsightDatasetKind.Rooms) {
+			return Promise.reject(new InsightError("Invalid kind"));
 		}
 
 		let ret: string[] = [];
@@ -112,6 +118,8 @@ export default class InsightFacade implements IInsightFacade {
 
 			for (let section of sections) {
 				// TODO: check if the section is valid
+				// TODO: also type check
+				// TODO: if section.id = "overall", year = 1900
 				let sec = new Section(section.id + "", section.Course + "", section.Title + "",
 					section.Professor + "", section.Subject + "", section.Year * 1,
 					section.Avg * 1, section.Pass * 1, section.Fail * 1, section.Audit * 1);
@@ -166,9 +174,9 @@ export default class InsightFacade implements IInsightFacade {
 			return Promise.reject(new InsightError("Referencing a dataset not added"));
 		}
 
-		let queryExecuter = new QueryExecutor(queryParserValidator.getQuery());
+		let queryExecutor = new QueryExecutor(queryParserValidator.getQuery());
 		try {
-			ret = queryExecuter.executeQuery(referencedDataset);
+			ret = queryExecutor.executeQuery(referencedDataset);
 		} catch (e) {
 			return Promise.reject(new ResultTooLargeError(e as string));
 		}

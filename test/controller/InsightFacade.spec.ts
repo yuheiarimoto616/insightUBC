@@ -2,7 +2,8 @@ import {
 	IInsightFacade,
 	InsightDatasetKind,
 	InsightError,
-	InsightResult, NotFoundError,
+	InsightResult,
+	NotFoundError,
 	ResultTooLargeError
 } from "../../src/controller/IInsightFacade";
 import InsightFacade from "../../src/controller/InsightFacade";
@@ -11,43 +12,42 @@ import {folderTest} from "@ubccpsc310/folder-test";
 import {expect, use} from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {clearDisk, getContentFromArchives} from "../TestUtil";
-import QueryParserValidator from "../../src/controller/QueryParserValidator";
 
 use(chaiAsPromised);
 
-describe("QueryParserValidator", function () {
-	let sections: string;
-	let facade: InsightFacade;
-
-	beforeEach(function () {
-		sections = getContentFromArchives("singleCourse.zip");
-		facade = new InsightFacade();
-		clearDisk();
-	});
-
-	it ("test", async function () {
-		let query: any = {
-			WHERE: {
-				NOT: {
-					IS: {
-						ubc_uuid: "85401"
-					}
-				}
-			},
-			OPTIONS: {
-				COLUMNS: [
-					"ubc_dept",
-					"ubc_uuid",
-					"ubc_avg"
-				]
-			}
-		};
-
-		await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
-		const result = facade.performQuery(query);
-		expect(result).equal(true);
-	});
-});
+// describe("QueryParserValidator", function () {
+// 	let sections: string;
+// 	let facade: InsightFacade;
+//
+// 	beforeEach(function () {
+// 		sections = getContentFromArchives("singleCourse.zip");
+// 		facade = new InsightFacade();
+// 		clearDisk();
+// 	});
+//
+// 	it ("test", async function () {
+// 		let query: any = {
+// 			WHERE: {
+// 				NOT: {
+// 					IS: {
+// 						ubc_uuid: "85401"
+// 					}
+// 				}
+// 			},
+// 			OPTIONS: {
+// 				COLUMNS: [
+// 					"ubc_dept",
+// 					"ubc_uuid",
+// 					"ubc_avg"
+// 				]
+// 			}
+// 		};
+//
+// 		await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
+// 		const result = facade.performQuery(query);
+// 		expect(result).equal(true);
+// 	});
+// });
 
 describe("InsightFacade", function () {
 	let facade: IInsightFacade;
@@ -91,11 +91,62 @@ describe("InsightFacade", function () {
 			// This section resets the data directory (removing any cached data)
 			// This runs after each test, which should make each test independent of the previous one
 			console.info(`AfterTest: ${this.currentTest?.title}`);
-			clearDisk();
+			// clearDisk();
+		});
+
+		// costructor
+		it ("should resolve with data successfully loaded to memory", async function () {
+			await facade.addDataset("ubc", singleCourse, InsightDatasetKind.Sections);
+
+			let facade2 = new InsightFacade();
+
+			const result = facade2.listDatasets();
+
+			return expect(result).to.eventually.be.deep.equal([{
+				id: "ubc",
+				kind: InsightDatasetKind.Sections,
+				numRows: 4
+			}]);
+		});
+
+		it ("should resolve with successful addition to recovered instance", async function () {
+			await facade.addDataset("ubc", singleCourse, InsightDatasetKind.Sections);
+
+			let facade2 = new InsightFacade();
+			await facade2.addDataset("ubcv", small, InsightDatasetKind.Sections);
+
+			const result = facade2.listDatasets();
+
+			return expect(result).to.eventually.be.deep.equal([{
+				id: "ubc",
+				kind: InsightDatasetKind.Sections,
+				numRows: 4
+			}, {
+				id: "ubcv",
+				kind: InsightDatasetKind.Sections,
+				numRows: 86
+			}]);
+		});
+
+		it ("should resolve with successful removala on recovered instance", async function () {
+			await facade.addDataset("ubc", singleCourse, InsightDatasetKind.Sections);
+			await facade.addDataset("ubcv", small, InsightDatasetKind.Sections);
+
+			let facade2 = new InsightFacade();
+
+			await facade2.removeDataset("ubc");
+
+			const result = facade2.listDatasets();
+
+			return expect(result).to.eventually.be.deep.equal([{
+				id: "ubcv",
+				kind: InsightDatasetKind.Sections,
+				numRows: 86
+			}]);
 		});
 
 		// addDataset
-		it ("test", function () {
+		it ("should resolve with simple addDateset", function () {
 			const result = facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.deep.equal(["ubc"]);
 		});
@@ -241,7 +292,7 @@ describe("InsightFacade", function () {
 	 * You can still make tests the normal way, this is just a convenient tool for a majority of queries.
 	 */
 	describe("PerformQuery", () => {
-		before(function () {
+		before(async function () {
 			console.info(`Before: ${this.test?.parent?.title}`);
 
 			facade = new InsightFacade();
@@ -250,9 +301,11 @@ describe("InsightFacade", function () {
 			// Will *fail* if there is a problem reading ANY dataset.
 			const loadDatasetPromises = [
 				facade.addDataset("sections", sections, InsightDatasetKind.Sections),
+				facade.addDataset("ubc", singleCourse, InsightDatasetKind.Sections)
 			];
 
-			return Promise.all(loadDatasetPromises);
+			await Promise.all(loadDatasetPromises);
+			facade = new InsightFacade();
 		});
 
 		after(function () {
