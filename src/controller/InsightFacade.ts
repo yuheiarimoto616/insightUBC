@@ -57,13 +57,10 @@ export default class InsightFacade implements IInsightFacade {
 		return false;
 	}
 
-	// TODO: kind = room invalid
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
-		// checks if id is valid
 		if (this.isInvalidID(id)) {
 			return Promise.reject(new InsightError("Invalid id"));
 		}
-
 		if (kind === InsightDatasetKind.Rooms) {
 			return Promise.reject(new InsightError("Invalid kind"));
 		}
@@ -77,7 +74,6 @@ export default class InsightFacade implements IInsightFacade {
 		} catch (e) {
 			return Promise.reject(new InsightError("Not zip file"));
 		}
-		// TODO: fix it (regex); doesn't catch folder name that contains "courses" (such as courses 2)
 		if (zip.folder(/courses/).length === 0) {
 			return Promise.reject(new InsightError("courses folder does not exit"));
 		}
@@ -93,10 +89,11 @@ export default class InsightFacade implements IInsightFacade {
 		});
 
 		const jobResults = await Promise.all(jobs);
-		// TODO: "Is a JSON formatted file"
 		this.addSections(jobResults, dataset);
+		if (dataset.getSections().length === 0) {
+			return Promise.reject(new InsightError("Invalid dataset with no valid section "));
+		}
 
-		// TODO: "contains at least one valid section"
 		this.datasets.push(dataset);
 		for (let ds of this.datasets) {
 			ret.push(ds.getID());
@@ -113,19 +110,58 @@ export default class InsightFacade implements IInsightFacade {
 
 	private addSections(jobResults: any, dataset: Dataset) {
 		for (const result of jobResults) {
-			let jsonObject = JSON.parse(result);
+			let jsonObject;
+
+			try {
+				jsonObject = JSON.parse(result);
+			} catch (e) {
+				continue;
+			}
+
+			if (!Object.hasOwn(jsonObject, "result")) {
+				continue;
+			}
+
 			let sections: any[] = jsonObject.result;
 
 			for (let section of sections) {
-				// TODO: check if the section is valid
-				// TODO: also type check
-				// TODO: if section.id = "overall", year = 1900
-				let sec = new Section(section.id + "", section.Course + "", section.Title + "",
-					section.Professor + "", section.Subject + "", section.Year * 1,
-					section.Avg * 1, section.Pass * 1, section.Fail * 1, section.Audit * 1);
-				dataset.addSection(sec);
+				if (this.hasValidFields(section)) {
+					let sec: Section;
+					if (Object.hasOwn(section, "Section") && ((section.Section + "") === "overall")) {
+						sec = new Section(section.id + "", section.Course + "", section.Title + "",
+							section.Professor + "", section.Subject + "", 1900,
+							section.Avg * 1, section.Pass * 1, section.Fail * 1, section.Audit * 1);
+					} else {
+						sec = new Section(section.id + "", section.Course + "", section.Title + "",
+							section.Professor + "", section.Subject + "", section.Year * 1,
+							section.Avg * 1, section.Pass * 1, section.Fail * 1, section.Audit * 1);
+					}
+
+					dataset.addSection(sec);
+				}
 			}
 		}
+	}
+
+	private hasValidFields(section: any) {
+		let hasAllFields = Object.hasOwn(section, "id") && Object.hasOwn(section, "Course")
+			&& Object.hasOwn(section, "Title") && Object.hasOwn(section, "Professor")
+			&& Object.hasOwn(section, "Subject") && Object.hasOwn(section, "Year")
+			&& Object.hasOwn(section, "Avg") && Object.hasOwn(section, "Pass")
+			&& Object.hasOwn(section, "Fail") && Object.hasOwn(section, "Audit");
+
+		let hasValidTypes = ((typeof section.id === "string") || typeof section.id === "number")
+			&& ((typeof section.Course === "string") || typeof section.Course === "number")
+			&& (typeof section.Title === "string")
+			&& (typeof section.Professor === "string")
+			&& (typeof section.Subject === "string")
+			&& ((typeof section.Year === "string") || typeof section.Year === "number")
+			&& ((typeof section.Avg === "string") || typeof section.Avg === "number")
+			&& ((typeof section.Pass === "string") || typeof section.Pass === "number")
+			&& ((typeof section.Fail === "string") || typeof section.Fail === "number")
+			&& ((typeof section.Audit === "string") || typeof section.Audit === "number");
+
+		return hasAllFields && hasValidTypes;
 	}
 
 	public async removeDataset(id: string): Promise<string> {

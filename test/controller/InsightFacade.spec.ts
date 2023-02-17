@@ -58,6 +58,8 @@ describe("InsightFacade", function () {
 	let small: string;
 	let nonzip: string;
 	let noCourses: string;
+	let courses2: string;
+	let fInF: string;
 
 	before(function () {
 		// This block runs once and loads the datasets.
@@ -66,6 +68,8 @@ describe("InsightFacade", function () {
 		small = getContentFromArchives("small.zip");
 		nonzip = getContentFromArchives("AANB500");
 		noCourses = getContentFromArchives("notCourses.zip");
+		courses2 = getContentFromArchives("course2.zip");
+		fInF = getContentFromArchives("folderInFolder.zip");
 
 		// Just in case there is anything hanging around from a previous run of the test suite
 		clearDisk();
@@ -164,6 +168,19 @@ describe("InsightFacade", function () {
 			return expect(result).to.eventually.deep.equal(["ubc", "ubcv"]);
 		});
 
+		it ("should resolve with valid DS containing Invalid Section", async function () {
+			let content = getContentFromArchives("validDSWithInValidSection.zip");
+			const result = facade.addDataset("ubc", content, InsightDatasetKind.Sections);
+
+			return expect(result).to.eventually.deep.equal(["ubc"]);
+		});
+
+		it ("should reject with invalid kind", function () {
+			const result = facade.addDataset("ubc", small, InsightDatasetKind.Rooms);
+
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
 		it ("should rejected with dataset with the same id",  async function () {
 			await facade.addDataset("ubc", singleCourse, InsightDatasetKind.Sections);
 
@@ -182,7 +199,44 @@ describe("InsightFacade", function () {
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		// This is a unit test. You should create more like this!
+		it ("should rejected with courses2 folder", function () {
+			const result = facade.addDataset("ubc", noCourses, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it ("should rejected with course folder in folder", function () {
+			const result = facade.addDataset("ubc", fInF, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it ("should reject with an empty dataset file", function () {
+			let content = getContentFromArchives("zeroSection.zip");
+			const result = facade.addDataset("ubc", content, InsightDatasetKind.Sections);
+
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it ("should reject with a dataset file with invalid empty section", function () {
+			let content = getContentFromArchives("invalidSection.zip");
+			const result = facade.addDataset("ubc", content, InsightDatasetKind.Sections);
+
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it ("should reject with a dataset file with invalid jason ", function () {
+			let content = getContentFromArchives("invalidJSON.zip");
+			const result = facade.addDataset("ubc", content, InsightDatasetKind.Sections);
+
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it ("should reject with sections not in result ", function () {
+			let content = getContentFromArchives("notInResult.zip");
+			const result = facade.addDataset("ubc", content, InsightDatasetKind.Sections);
+
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
 		it ("should reject with  an empty dataset id", function() {
 			const result = facade.addDataset("", small, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
@@ -196,6 +250,76 @@ describe("InsightFacade", function () {
 
 		it ("should reject with invalid dataset id with underscore", function () {
 			const result = facade.addDataset("ubc_v", small, InsightDatasetKind.Sections);
+
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it ("should reject with invalid section with id missing", function () {
+			let content = getContentFromArchives("idMissing.zip");
+			const result = facade.addDataset("ubc", content, InsightDatasetKind.Sections);
+
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it ("should reject with invalid section with course missing", function () {
+			let content = getContentFromArchives("courseMissing.zip");
+			const result = facade.addDataset("ubc", content, InsightDatasetKind.Sections);
+
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it ("should reject with invalid section with title missing", function () {
+			let content = getContentFromArchives("titleMissing.zip");
+			const result = facade.addDataset("ubc", content, InsightDatasetKind.Sections);
+
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it ("should reject with invalid section with professor missing", function () {
+			let content = getContentFromArchives("professorMissing.zip");
+			const result = facade.addDataset("ubc", content, InsightDatasetKind.Sections);
+
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it ("should reject with invalid section with subject missing", function () {
+			let content = getContentFromArchives("subjectMissing.zip");
+			const result = facade.addDataset("ubc", content, InsightDatasetKind.Sections);
+
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it ("should reject with invalid section with year missing", function () {
+			let content = getContentFromArchives("yearMissing.zip");
+			const result = facade.addDataset("ubc", content, InsightDatasetKind.Sections);
+
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it ("should reject with invalid section with avg missing", function () {
+			let content = getContentFromArchives("avgMissing.zip");
+			const result = facade.addDataset("ubc", content, InsightDatasetKind.Sections);
+
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it ("should reject with invalid section with pass missing", function () {
+			let content = getContentFromArchives("passMissing.zip");
+			const result = facade.addDataset("ubc", content, InsightDatasetKind.Sections);
+
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it ("should reject with invalid section with fail missing", function () {
+			let content = getContentFromArchives("failMissing.zip");
+			const result = facade.addDataset("ubc", content, InsightDatasetKind.Sections);
+
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it ("should reject with invalid section with audit missing", function () {
+			let content = getContentFromArchives("auditMissing.zip");
+			const result = facade.addDataset("ubc", content, InsightDatasetKind.Sections);
 
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
@@ -291,6 +415,35 @@ describe("InsightFacade", function () {
 	 * You should not need to modify it; instead, add additional files to the queries directory.
 	 * You can still make tests the normal way, this is just a convenient tool for a majority of queries.
 	 */
+
+	describe("PQManual",  function () {
+		before(function () {
+			facade = new InsightFacade();
+		});
+
+		it ("should resolve with empty where", async function () {
+			let content = getContentFromArchives("singleSection.zip");
+			await facade.addDataset("sections", content, InsightDatasetKind.Sections);
+			const result = facade.performQuery({
+				WHERE: {},
+				OPTIONS: {
+					COLUMNS: [
+						"sections_dept",
+						"sections_id",
+						"sections_avg"
+					]
+				}
+			});
+
+			let expected = [{sections_dept: "hist", sections_id: "256", sections_avg: 74.65}];
+
+			return expect(result).to.eventually.be.deep.equal(expected);
+		});
+
+		after(function () {
+			clearDisk();
+		});
+	});
 	describe("PerformQuery", () => {
 		before(async function () {
 			console.info(`Before: ${this.test?.parent?.title}`);
