@@ -14,6 +14,14 @@ import fs from "fs-extra";
 import JSZip from "jszip";
 import QueryParserValidator from "./QueryParserValidator";
 import QueryExecutor from "./QueryExecutor";
+import SectionsDataset from "./SectionsDataset";
+import RoomsDataset from "./RoomsDataset";
+import Room from "./Room";
+import {secureHeapUsed} from "crypto";
+import parse5, {defaultTreeAdapter} from "parse5";
+import {ChildNode, Element, TextNode} from "parse5/dist/tree-adapters/default";
+import {Attribute} from "parse5/dist/common/token";
+import Building from "./Building";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -30,12 +38,25 @@ export default class InsightFacade implements IInsightFacade {
 			fs.readdirSync("data").forEach((value) => {
 				let jsonObject = fs.readJsonSync("data/" + value);
 
-				let ds = new Dataset(jsonObject.id, jsonObject.kind);
-				for (let s of jsonObject.sections) {
-					let section: Section = new Section(s._id, s._Course, s._Title, s._Professor,
-						s._Subject, s._Year, s._Avg, s._Pass, s._Fail, s._Audit);
-					ds.addSection(section);
+				let ds;
+				if (jsonObject.kind === InsightDatasetKind.Sections) {
+					ds = new SectionsDataset(jsonObject.id);
+					for (let s of jsonObject.sections) {
+						let section: Section = new Section(s._id, s._Course, s._Title, s._Professor,
+							s._Subject, s._Year, s._Avg, s._Pass, s._Fail, s._Audit);
+						ds.addSection(section);
+					}
+				} else {
+					ds = new RoomsDataset(jsonObject.id);
+					for (let r of jsonObject.rooms) {
+						let buildingObj = r.building;
+						let building: Building = new Building(buildingObj.fullName, buildingObj.shortName,
+							buildingObj.address, buildingObj.link, buildingObj.lat, buildingObj.lon);
+						let room: Room = new Room(building, r.number, r.seats, r.type, r.furniture, r.href);
+						ds.addRoom(room);
+					}
 				}
+
 				this.datasets.push(ds);
 			});
 		}
@@ -61,38 +82,22 @@ export default class InsightFacade implements IInsightFacade {
 		if (this.isInvalidID(id)) {
 			return Promise.reject(new InsightError("Invalid id"));
 		}
-		if (kind === InsightDatasetKind.Rooms) {
-			return Promise.reject(new InsightError("Invalid kind"));
+
+		let dataset: Dataset;
+
+		if (kind === InsightDatasetKind.Sections) {
+			dataset = new SectionsDataset(id);
+		} else {
+			dataset = new RoomsDataset(id);
+		}
+
+		try {
+			await dataset.addContent(content);
+		} catch (e) {
+			return Promise.reject(e);
 		}
 
 		let ret: string[] = [];
-		let dataset = new Dataset(id, kind);
-		let zip = new JSZip();
-
-		try {
-			await zip.loadAsync(content, {base64: true});
-		} catch (e) {
-			return Promise.reject(new InsightError("Not zip file"));
-		}
-		if (zip.folder(/courses/).length === 0) {
-			return Promise.reject(new InsightError("courses folder does not exit"));
-		}
-
-		let jobs: any = [];
-		zip.folder("courses");
-		zip.forEach( (relativePath, file) => {
-			if (/^courses\/[^.]+/.test(relativePath)) {
-				let course = zip.file(relativePath);
-
-				jobs.push(course?.async("string"));
-			}
-		});
-
-		const jobResults = await Promise.all(jobs);
-		this.addSections(jobResults, dataset);
-		if (dataset.getSections().length === 0) {
-			return Promise.reject(new InsightError("Invalid dataset with no valid section "));
-		}
 
 		this.datasets.push(dataset);
 		for (let ds of this.datasets) {
@@ -106,62 +111,6 @@ export default class InsightFacade implements IInsightFacade {
 		}
 
 		return Promise.resolve(ret);
-	}
-
-	private addSections(jobResults: any, dataset: Dataset) {
-		for (const result of jobResults) {
-			let jsonObject;
-
-			try {
-				jsonObject = JSON.parse(result);
-			} catch (e) {
-				continue;
-			}
-
-			if (!Object.hasOwn(jsonObject, "result")) {
-				continue;
-			}
-
-			let sections: any[] = jsonObject.result;
-
-			for (let section of sections) {
-				if (this.hasValidFields(section)) {
-					let sec: Section;
-					if (Object.hasOwn(section, "Section") && ((section.Section + "") === "overall")) {
-						sec = new Section(section.id + "", section.Course + "", section.Title + "",
-							section.Professor + "", section.Subject + "", 1900,
-							section.Avg * 1, section.Pass * 1, section.Fail * 1, section.Audit * 1);
-					} else {
-						sec = new Section(section.id + "", section.Course + "", section.Title + "",
-							section.Professor + "", section.Subject + "", section.Year * 1,
-							section.Avg * 1, section.Pass * 1, section.Fail * 1, section.Audit * 1);
-					}
-
-					dataset.addSection(sec);
-				}
-			}
-		}
-	}
-
-	private hasValidFields(section: any) {
-		let hasAllFields = Object.hasOwn(section, "id") && Object.hasOwn(section, "Course")
-			&& Object.hasOwn(section, "Title") && Object.hasOwn(section, "Professor")
-			&& Object.hasOwn(section, "Subject") && Object.hasOwn(section, "Year")
-			&& Object.hasOwn(section, "Avg") && Object.hasOwn(section, "Pass")
-			&& Object.hasOwn(section, "Fail") && Object.hasOwn(section, "Audit");
-
-		let hasValidTypes = ((typeof section.id === "string") || typeof section.id === "number")
-			&& ((typeof section.Course === "string") || typeof section.Course === "number")
-			&& (typeof section.Title === "string")
-			&& (typeof section.Professor === "string")
-			&& (typeof section.Subject === "string")
-			&& ((typeof section.Year === "string") || typeof section.Year === "number")
-			&& ((typeof section.Avg === "string") || typeof section.Avg === "number")
-			&& ((typeof section.Pass === "string") || typeof section.Pass === "number")
-			&& ((typeof section.Fail === "string") || typeof section.Fail === "number")
-			&& ((typeof section.Audit === "string") || typeof section.Audit === "number");
-
-		return hasAllFields && hasValidTypes;
 	}
 
 	public async removeDataset(id: string): Promise<string> {
@@ -202,7 +151,7 @@ export default class InsightFacade implements IInsightFacade {
 		let referencedDataset = null;
 		for (let ds of this.datasets) {
 			if (ds.getID() === queryParserValidator.getReferencedID()) {
-				referencedDataset = ds.getSections();
+				referencedDataset = ds.getContents();
 			}
 		}
 
@@ -226,7 +175,7 @@ export default class InsightFacade implements IInsightFacade {
 			let iDataset: InsightDataset = {
 				id: ds.getID(),
 				kind: ds.getKind(),
-				numRows: ds.getSections().length
+				numRows: ds.getContents().length
 			};
 
 			ret.push(iDataset);

@@ -60,6 +60,7 @@ describe("InsightFacade", function () {
 	let noCourses: string;
 	let courses2: string;
 	let fInF: string;
+	let rooms: string;
 
 	before(function () {
 		// This block runs once and loads the datasets.
@@ -70,6 +71,8 @@ describe("InsightFacade", function () {
 		noCourses = getContentFromArchives("notCourses.zip");
 		courses2 = getContentFromArchives("course2.zip");
 		fInF = getContentFromArchives("folderInFolder.zip");
+
+		rooms = getContentFromArchives("campus.zip");
 
 		// Just in case there is anything hanging around from a previous run of the test suite
 		clearDisk();
@@ -99,6 +102,39 @@ describe("InsightFacade", function () {
 		});
 
 		// costructor
+		// rooms
+		it ("should resolve with data successfully loaded to memory with roomsDataset", async function () {
+			await facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms);
+
+			let facade2 = new InsightFacade();
+
+			const result = facade2.listDatasets();
+
+			return expect(result).to.eventually.be.deep.equal([{
+				id: "rooms",
+				kind: InsightDatasetKind.Rooms,
+				numRows: 364
+			}]);
+		});
+
+		it ("should resolve with successful removal on recovered instance with roomsDset", async function () {
+			await facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms);
+			await facade.addDataset("ubcv", small, InsightDatasetKind.Sections);
+
+			let facade2 = new InsightFacade();
+
+			await facade2.removeDataset("rooms");
+
+			const result = facade2.listDatasets();
+
+			return expect(result).to.eventually.be.deep.equal([{
+				id: "ubcv",
+				kind: InsightDatasetKind.Sections,
+				numRows: 86
+			}]);
+		});
+
+		// sections
 		it ("should resolve with data successfully loaded to memory", async function () {
 			await facade.addDataset("ubc", singleCourse, InsightDatasetKind.Sections);
 
@@ -132,7 +168,7 @@ describe("InsightFacade", function () {
 			}]);
 		});
 
-		it ("should resolve with successful removala on recovered instance", async function () {
+		it ("should resolve with successful removal on recovered instance", async function () {
 			await facade.addDataset("ubc", singleCourse, InsightDatasetKind.Sections);
 			await facade.addDataset("ubcv", small, InsightDatasetKind.Sections);
 
@@ -150,6 +186,30 @@ describe("InsightFacade", function () {
 		});
 
 		// addDataset
+		// combination
+		it ("should resolve with both addRoomsDateset and addSectionsDataset ", async function () {
+			await facade.addDataset("ubc", singleCourse, InsightDatasetKind.Sections);
+			const result = facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.deep.equal(["ubc", "rooms"]);
+		});
+
+		// rooms
+		it ("should resolve with simple addRoomsDateset ", function () {
+			const result = facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.deep.equal(["rooms"]);
+		});
+
+		it ("should rejected with kind and content mismatch", function () {
+			const result = facade.addDataset("rooms", rooms, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it ("should rejected with kind and content mismatch No2", function () {
+			const result = facade.addDataset("ubc", small, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		// sections
 		it ("should resolve with simple addDateset", function () {
 			const result = facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.deep.equal(["ubc"]);
@@ -325,6 +385,24 @@ describe("InsightFacade", function () {
 		});
 
 		// removeDataset
+		// rooms
+		it ("should resolve when only dataset with roomsDataset",  async function () {
+			await facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms);
+			const result = facade.removeDataset("rooms");
+
+			return expect(result).to.eventually.equal("rooms");
+		});
+
+		it ("should resolve when only dataset with roomsDataset and sectionsDataset",  async function () {
+			await facade.addDataset("ubc", small, InsightDatasetKind.Sections);
+			await facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms);
+
+			const result = facade.removeDataset("rooms");
+
+			return expect(result).to.eventually.equal("rooms");
+		});
+
+		// sections
 		it ("should resolve when only dataset",  async function () {
 			await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
 			const result = facade.removeDataset("ubc");
@@ -370,13 +448,27 @@ describe("InsightFacade", function () {
 		});
 
 		// listDatasets
+		// rooms
 		it ("should resolve with empty", function () {
 			const result = facade.listDatasets();
 
 			return expect(result).to.eventually.deep.equal([]);
 		});
 
-		it ("should resolve with one dataset", async function () {
+		it ("should resolve with one roomsDataset", async function () {
+			await facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms);
+
+			const result = facade.listDatasets();
+
+			return expect(result).to.eventually.deep.equal([{
+				id: "rooms",
+				kind: InsightDatasetKind.Rooms,
+				numRows: 364
+			}]);
+		});
+
+		// sections
+		it ("should resolve with one sectionsDataset", async function () {
 			await facade.addDataset("ubc", small, InsightDatasetKind.Sections);
 
 			const result = facade.listDatasets();
@@ -405,6 +497,33 @@ describe("InsightFacade", function () {
 					id: "ubcv",
 					kind: InsightDatasetKind.Sections,
 					numRows: 4
+				}
+			]);
+		});
+
+		it ("should resolve with multiple dataset using both types of dset", async function () {
+			// maybe not use sections too big
+			await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
+			await facade.addDataset("ubcv", singleCourse, InsightDatasetKind.Sections);
+			await facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms);
+
+			const result = facade.listDatasets();
+
+			return expect(result).to.eventually.deep.equal([
+				{
+					id: "ubc",
+					kind: InsightDatasetKind.Sections,
+					numRows: 64612
+				},
+				{
+					id: "ubcv",
+					kind: InsightDatasetKind.Sections,
+					numRows: 4
+				},
+				{
+					id: "rooms",
+					kind: InsightDatasetKind.Rooms,
+					numRows:364
 				}
 			]);
 		});

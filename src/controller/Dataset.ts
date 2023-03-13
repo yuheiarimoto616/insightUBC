@@ -1,20 +1,15 @@
 import Section from "./Section";
 import {InsightDatasetKind} from "./IInsightFacade";
+import List = Mocha.reporters.List;
 
-export default class Dataset {
-	private id: string;
-	private sections: Section[];
+export default abstract class Dataset {
+	protected id: string;
 
-	private kind: InsightDatasetKind;
+	protected kind: InsightDatasetKind;
 
 	constructor(id: string, kind: InsightDatasetKind) {
 		this.id = id;
 		this.kind = kind;
-		this.sections = [];
-	}
-
-	public addSection(section: Section) {
-		this.sections.push(section);
 	}
 
 	public getID(): string {
@@ -25,7 +20,6 @@ export default class Dataset {
 		return this.kind;
 	}
 
-	public getSections(): Section[] {
-		return this.sections;
-	}
+	public abstract addContent(content: string): any;
+	public abstract getContents(): any;
 }
