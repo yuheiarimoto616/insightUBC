@@ -1,7 +1,8 @@
 import {Body, Filter, LOGICCOMPARISON, MCOMPARISON, NEGATION, Options, Query, SCOMPARISON} from "./QueryEBNF";
 import Section from "./Section";
-import {InsightResult, ResultTooLargeError} from "./IInsightFacade";
+import {InsightError, InsightResult, ResultTooLargeError} from "./IInsightFacade";
 import {strict} from "assert";
+import {DataContent} from "./DataContent";
 
 export default class QueryExecutor {
 	private query: Query;
@@ -9,9 +10,9 @@ export default class QueryExecutor {
 		this.query = query;
 	}
 
-	public executeQuery(sections: Section[]): InsightResult[] {
+	public executeQuery(content: DataContent[]): InsightResult[] {
 		let where = this.query.BODY as Body;
-		let matchedSec: Section[] = this.executeWhere(where, sections);
+		let matchedSec: DataContent[] = this.executeWhere(where, content);
 
 		let options = this.query.OPTIONS as Options;
 		let ret: InsightResult[] = this.executeOptions(options, matchedSec);
@@ -19,58 +20,58 @@ export default class QueryExecutor {
 		return ret;
 	}
 
-	private executeWhere(where: Body, sections: Section[]): Section[] {
-		let ret: Section[] = [];
+	private executeWhere(where: Body, content: DataContent[]): DataContent[] {
+		let ret: DataContent[] = [];
 		if (where.WHERE === null) {
-			if (sections.length > 5000) {
+			if (content.length > 5000) {
 				throw new ResultTooLargeError("result has more than 5000");
 			}
-			return sections;
+			return content;
 		}
 
-		for (let s of sections) {
-			if (this.executeFilter(s, where.WHERE)) {
+		for (let c of content) {
+			if (this.executeFilter(c, where.WHERE)) {
 				if (ret.length >= 5000) {
 					throw new ResultTooLargeError("result has more than 5000");
 				}
-				ret.push(s);
+				ret.push(c);
 			}
 		}
 
 		return ret;
 	}
 
-	private executeFilter(s: Section, where: Filter): boolean {
+	private executeFilter(c: DataContent, where: Filter): boolean {
 		if (this.instanceOfLogicCom(where)) {
-			return this.executeLogicCom(s, where);
+			return this.executeLogicCom(c, where);
 		}
 
 		if (this.instanceOfMCom(where)) {
-			return this.executeMcom(s, where);
+			return this.executeMcom(c, where);
 		}
 
 		if (this.instanceOfSCom(where)) {
-			return this.executeScom(s, where);
+			return this.executeScom(c, where);
 		}
 
 		if (this.instanceOfNegation(where)) {
-			return this.executeNegation(s, where);
+			return this.executeNegation(c, where);
 		}
 
 		return false;
 	}
 
-	private executeLogicCom(s: Section, lcom: LOGICCOMPARISON): boolean {
+	private executeLogicCom(c: DataContent, lcom: LOGICCOMPARISON): boolean {
 		if (lcom.LOGIC === "AND") {
 			for (let filter of lcom.FILTER_LIST) {
-				if (!this.executeFilter(s, filter)) {
+				if (!this.executeFilter(c, filter)) {
 					return false;
 				}
 			}
 			return true;
 		} else {
 			for (let filter of lcom.FILTER_LIST) {
-				if (this.executeFilter(s, filter)) {
+				if (this.executeFilter(c, filter)) {
 					return true;
 				}
 			}
@@ -78,8 +79,12 @@ export default class QueryExecutor {
 		}
 	}
 
-	private executeMcom(s: Section, mcom: MCOMPARISON): boolean {
-		let sectionField = s.getSectionMField(mcom.mkey);
+	private executeMcom(c: DataContent, mcom: MCOMPARISON): boolean {
+		let sectionField = c.getSectionMField(mcom.mkey);
+		// TODO: test
+		if (sectionField === null) {
+			throw new InsightError("Wrong DataContent type");
+		}
 		if (mcom.MCOMPARATOR === "LT") {
 			return mcom.num > sectionField;
 		} else if (mcom.MCOMPARATOR === "GT") {
@@ -89,9 +94,14 @@ export default class QueryExecutor {
 		}
 	}
 
-	private executeScom(s: Section, scom: SCOMPARISON): boolean {
-		let sectionField = s.getSectionSField(scom.IS.skey);
+	// TODO: Fix wildcards
+	private executeScom(c: DataContent, scom: SCOMPARISON): boolean {
+		let sectionField = c.getSectionSField(scom.IS.skey);
 		let target = scom.IS.inputString;
+		// TODO: test
+		if (sectionField === null) {
+			throw new InsightError("Wrong DataContent type");
+		}
 		if (target.startsWith("*") && target.endsWith("*")) {
 			return sectionField.includes(target.substring(1, target.length - 1));
 		} else if (target.endsWith("*")) {
@@ -103,18 +113,21 @@ export default class QueryExecutor {
 		}
 	}
 
-	private executeNegation(s: Section, neg: NEGATION) {
-		return !this.executeFilter(s, neg.NOT.FILTER);
+	private executeNegation(c: DataContent, neg: NEGATION) {
+		return !this.executeFilter(c, neg.NOT.FILTER);
 	}
 
-	private executeOptions(options: Options, sections: Section[]): InsightResult[] {
+	private executeOptions(options: Options, content: DataContent[]): InsightResult[] {
 		let ret: InsightResult[] = [];
 		let cols: string[] = options.COLUMNS;
 
-		for (let s of sections) {
+		for (let s of content) {
 			let insightResult: InsightResult = {};
 			for (let key of cols) {
 				let value = s.getSectionField(key.split("_")[1]);
+				if (value === null) {
+					throw new InsightError("DataType and field mismatch");
+				}
 				insightResult[key] = value;
 			}
 			ret.push(insightResult);

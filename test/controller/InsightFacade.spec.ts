@@ -536,8 +536,22 @@ describe("InsightFacade", function () {
 	 */
 
 	describe("PQManual",  function () {
-		before(function () {
+		beforeEach(function () {
 			facade = new InsightFacade();
+		});
+
+		afterEach(function () {
+			// This section resets the data directory (removing any cached data)
+			// This runs after each test, which should make each test independent of the previous one
+			clearDisk();
+		});
+
+		it ("should rejected",  async function() {
+			let content = getContentFromArchives("singleSection.zip");
+			await facade.addDataset("sections", content, InsightDatasetKind.Sections);
+			const result = facade.performQuery("yuhei");
+
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
 		it ("should resolve with empty where", async function () {
@@ -573,7 +587,8 @@ describe("InsightFacade", function () {
 			// Will *fail* if there is a problem reading ANY dataset.
 			const loadDatasetPromises = [
 				facade.addDataset("sections", sections, InsightDatasetKind.Sections),
-				facade.addDataset("ubc", singleCourse, InsightDatasetKind.Sections)
+				facade.addDataset("ubc", singleCourse, InsightDatasetKind.Sections),
+				facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms)
 			];
 
 			await Promise.all(loadDatasetPromises);

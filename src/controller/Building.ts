@@ -1,13 +1,6 @@
 import http from "http";
 import {InsightError} from "./IInsightFacade";
 
-interface GeoResponse {
-	lat?: number;
-	lon?: number;
-	error?: string;
-
-}
-
 export default class Building {
 	private fullName: string;
 	private shortName: string;
@@ -26,40 +19,63 @@ export default class Building {
 		if (lat && lon) {
 			this.lat = lat;
 			this.lon = lon;
-		} else {
-			try {
-				this.setLatAndLon();
-			} catch (e) {
-				throw new InsightError((e as Error).message);
-			}
 		}
 	}
 
-	public setLatAndLon() {
+	public setLatAndLon(): Promise<void> {
 		let teamNumber = "004";
 		let encodedAddress = encodeURIComponent(this.address);
 
 		let url = "http://cs310.students.cs.ubc.ca:11316/api/v1/project_team" + teamNumber + "/" + encodedAddress;
 
-		http.get(url, (res) => {
-			let rawData = "";
-			res.on("data", (chunk) => {
-				rawData += chunk;
-			});
-			res.on("end", () => {
-				try {
-					let parsedData = JSON.parse(rawData);
-					if (Object.hasOwn(parsedData, "error")){
-						throw new Error(parsedData.error);
-					}
+		return new Promise<void>((resolve, reject) => {
+			http.get(url, (res) => {
+				let rawData = "";
 
-					this.lat = parsedData.lat;
-					this.lon = parsedData.lon;
-				} catch (e) {
-					throw Error("No lat and lon");
-				}
+				res.on("data", (chunk) => {
+					rawData += chunk;
+				});
+
+				res.on("end", () => {
+					try {
+						let parsedData = JSON.parse(rawData);
+						if (Object.hasOwn(parsedData, "error")) {
+							reject(parsedData.error);
+						}
+
+						this.lat = parsedData.lat;
+						this.lon = parsedData.lon;
+					} catch (e) {
+						reject(new InsightError("No lat and lon"));
+					}
+				});
+			}).on("error", (e) => {
+				reject(e);
 			});
+
+			resolve();
 		});
+		// await http.get(url, (res) => {
+		// 	let rawData = "";
+		// 	res.on("data", (chunk) => {
+		// 		rawData += chunk;
+		// 	});
+		// 	res.on("end", () => {
+		// 		try {
+		// 			let parsedData = JSON.parse(rawData);
+		// 			if (Object.hasOwn(parsedData, "error")) {
+		// 				throw new Error(parsedData.error);
+		// 			}
+		//
+		// 			this.lat = parsedData.lat;
+		// 			this.lon = parsedData.lon;
+		// 		} catch (e) {
+		// 			throw Error("No lat and lon");
+		// 		}
+		// 	}).on("error", (e) => {
+		// 		throw e;
+		// 	});
+		// });
 	}
 
 	public getFullName() {
