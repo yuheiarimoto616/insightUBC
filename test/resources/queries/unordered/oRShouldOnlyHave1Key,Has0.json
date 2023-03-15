@@ -1,0 +1,25 @@
+{
+	"title": "OR should only have 1 key, has 0",
+	"input": {
+		"WHERE": {
+			"OR": [
+				{},
+				{
+					"EQ": {
+						"ubc_avg": 95
+					}
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"ubc_dept",
+				"ubc_id",
+				"ubc_avg"
+			],
+			"ORDER": "ubc_avg"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}
