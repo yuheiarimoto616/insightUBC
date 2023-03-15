@@ -6,10 +6,13 @@ export default class QueryParserValidator {
 	private referencedId: string;
 	private LOGIC: string[] = ["AND", "OR"];
 	private MCOMPARATOR: string[] = ["LT", "GT", "EQ"];
-	private MFIELD: string[] = ["avg", "pass", "fail", "audit", "year"];
-	private SFIELD: string[] = ["dept", "id", "instructor", "title", "uuid"];
+	private MFIELD: string[] = ["avg", "pass", "fail", "audit", "year", "lat", "lon", "seats"];
+	private SFIELD: string[] = ["dept", "id", "instructor", "title", "uuid", "fullname", "shortname", "number", "name",
+		"address", "type", "furniture", "href"];
+
 	private idstring = new RegExp(/^[^_]+$/);
 	private inputstring = new RegExp(/^[*]?[^*]*[*]?$/);
+	private applykey = new RegExp(/^[^_]+$/);
 	private onlySpace = new RegExp(/^\s*$/);
 
 	constructor() {
@@ -48,7 +51,7 @@ export default class QueryParserValidator {
 		}
 
 		let filter = this.validateFilter(where);
-		if (filter == null) {
+		if (filter === null) {
 			return false;
 		} else {
 			this.query.BODY = {

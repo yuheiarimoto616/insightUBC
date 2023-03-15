@@ -55,14 +55,21 @@ export default class RoomsDataset extends Dataset {
 		}
 	}
 
-	private async processBuilding(row: Element, zip: JSZip) {
-		let building = this.getBuilding(row);
+	private async processBuilding(row: Element, zip: JSZip): Promise<void> {
+		let building;
+
+		try {
+			building = await this.getBuilding(row);
+		} catch (e) {
+			return Promise.reject();
+		}
+
 		if (building === null) {
-			return;
+			return Promise.reject();
 		}
 
 		if (zip.file(building.getLink()) === null) {
-			return;
+			return Promise.reject();
 		}
 
 		let content = await zip.file(building.getLink())?.async("string");
@@ -84,7 +91,46 @@ export default class RoomsDataset extends Dataset {
 			}
 		}
 
-		return;
+		return Promise.resolve();
+	}
+
+	private async getBuilding(row: Element): Promise<Building | null> {
+		let buildingCode = null;
+		let buildingName = null;
+		let buildingAddress = null;
+		let buildingLink = "";
+
+		for (let cell of row.childNodes) {
+			if (!this.isValidCell(cell)) {
+				continue;
+			}
+
+			cell = cell as Element;
+			let classAttrs = this.getClassAttributes(cell.attrs);
+
+			if (classAttrs.includes("views-field-field-building-code")) {
+				buildingCode = this.getValue(cell.childNodes);
+			} else if (classAttrs.includes("views-field-title")) {
+				buildingName = this.getValue(cell.childNodes);
+			} else if (classAttrs.includes("views-field-field-building-address")) {
+				buildingAddress = this.getValue(cell.childNodes);
+			} else if (classAttrs.includes("views-field-nothing")) {
+				buildingLink = this.getLink(cell.childNodes);
+			}
+		}
+
+		if (buildingCode === null || buildingName === null || buildingAddress === null || buildingLink === "") {
+			return Promise.resolve(null);
+		}
+
+		let building =  new Building(buildingName, buildingCode, buildingAddress, buildingLink);
+		try {
+			await building.setLatAndLon();
+		} catch (e) {
+			return Promise.reject(new InsightError((e as Error).message));
+		}
+
+		return Promise.resolve(building);
 	}
 
 	private getRoom(room: Element, building: Building) {
@@ -121,40 +167,6 @@ export default class RoomsDataset extends Dataset {
 		}
 
 		return new Room(building, roomNumber, +roomSeats, roomType, roomFurniture, roomHref);
-	}
-
-	private getBuilding(row: Element) {
-		let buildingCode = null;
-		let buildingName = null;
-		let buildingAddress = null;
-		let buildingLink = "";
-
-		for (let cell of row.childNodes) {
-			if (!this.isValidCell(cell)) {
-				continue;
-			}
-
-			cell = cell as Element;
-			let classAttrs = this.getClassAttributes(cell.attrs);
-
-			if (classAttrs.includes("views-field-field-building-code")) {
-				buildingCode = this.getValue(cell.childNodes);
-			} else if (classAttrs.includes("views-field-title")) {
-				buildingName = this.getValue(cell.childNodes);
-			} else if (classAttrs.includes("views-field-field-building-address")) {
-				buildingAddress = this.getValue(cell.childNodes);
-			} else if (classAttrs.includes("views-field-nothing")) {
-				buildingLink = this.getLink(cell.childNodes);
-			}
-		}
-
-		if (buildingCode === null || buildingName === null || buildingAddress === null || buildingLink === "") {
-			return null;
-		}
-
-		let building =  new Building(buildingName, buildingCode, buildingAddress, buildingLink);
-
-		return building;
 	}
 
 	private getLink(from: ChildNode[]) {

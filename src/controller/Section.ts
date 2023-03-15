@@ -1,4 +1,6 @@
-export default class Section {
+import {DataContent} from "./DataContent";
+
+export default class Section implements DataContent{
 	private readonly _id: string;
 	private readonly _Course: string;
 	private readonly _Title: string;
@@ -56,13 +58,13 @@ export default class Section {
 			case "uuid": {
 				return this._id;
 			}
-			default: { // impossible; should not be called
-				return 0;
+			default: {
+				return null;
 			}
 		}
 	}
 
-	public getSectionMField(mfield: string) {
+	public getSectionMField(mfield: string): number | null {
 		switch (mfield) {
 			case "avg": {
 				return this._Avg;
@@ -79,13 +81,13 @@ export default class Section {
 			case "year": {
 				return this._Year;
 			}
-			default: { // impossible; should not be called
-				return 0;
+			default: {
+				return null;
 			}
 		}
 	}
 
-	public getSectionSField(sfield: string) {
+	public getSectionSField(sfield: string): string | null {
 		switch (sfield) {
 			case "dept": {
 				return this._Subject;
@@ -102,8 +104,8 @@ export default class Section {
 			case "uuid": {
 				return this._id;
 			}
-			default: { // impossible; should not be called
-				return "";
+			default: {
+				return null;
 			}
 		}
 	}

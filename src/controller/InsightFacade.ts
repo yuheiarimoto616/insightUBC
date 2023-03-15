@@ -163,7 +163,7 @@ export default class InsightFacade implements IInsightFacade {
 		try {
 			ret = queryExecutor.executeQuery(referencedDataset);
 		} catch (e) {
-			return Promise.reject(new ResultTooLargeError(e as string));
+			return Promise.reject(e);
 		}
 
 		return Promise.resolve(ret);
