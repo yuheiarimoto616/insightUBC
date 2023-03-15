@@ -1,5 +1,5 @@
 import Section from "./Section";
-import {Filter, Key, LOGICCOMPARISON, MCOMPARISON, NEGATION, Query, SCOMPARISON} from "./QueryEBNF";
+import {Filter, Key, LOGICCOMPARISON, MCOMPARISON, NEGATION, Query, SCOMPARISON, Sort} from "./QueryEBNF";
 
 export default class QueryParserValidator {
 	private query: Query;
@@ -230,15 +230,13 @@ export default class QueryParserValidator {
 			}
 
 			let order = options.ORDER;
-			if (typeof order !== "string" || !this.validateKey(order, Key.key)) {
+			let sort = this.validateSort(order);
+			if (sort === null) {
 				return false;
 			}
 
 			if (cols.includes(order)) {
-				this.query.OPTIONS = {
-					COLUMNS: cols,
-					ORDER: order
-				};
+				// TODO Check cols include keys
 				return true;
 			} else {
 				return false;
@@ -249,6 +247,46 @@ export default class QueryParserValidator {
 			COLUMNS: cols
 		};
 		return true;
+	}
+
+	public validateSort(order: any): Sort | null{
+		let sort = null;
+		if (typeof order === "string") {
+			if (!this.validateKey(order, Key.key)) {
+				return null;
+			}
+
+			sort = {
+				ORDER2: order,
+			};
+		}
+
+		if (typeof order !== "string" || typeof order !== "object") {
+			return null;
+		}
+
+		if (typeof order !== "string" || !this.validateKey(order, Key.key)) {
+			return null;
+		}
+
+		if (typeof order === "object") {
+			order = order as object;
+			if (!Object.hasOwn(order, "dir") || !Object.hasOwn(order, "key")) {
+				return null;
+			}
+
+			if (typeof order.dir !== "string" || !Array.isArray(order.keys)) {
+				return null;
+			}
+
+			sort = {
+				ORDER1: {
+					DIRECTION: order.dir,
+					KEYS: order.keys
+				}
+			};
+		}
+		return sort;
 	}
 
 	public getReferencedID() {

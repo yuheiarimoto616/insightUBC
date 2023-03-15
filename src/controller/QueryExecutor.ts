@@ -133,8 +133,8 @@ export default class QueryExecutor {
 			ret.push(insightResult);
 		}
 
-		if (this.query.OPTIONS?.ORDER !== undefined) {
-			ret = this.orderQuery(this.query.OPTIONS?.ORDER, ret);
+		if (this.query.OPTIONS?.SORT !== undefined) {
+			// TODO CHANGE THIS LINE TO OTPIONS?.SORT ret = this.orderQuery(this.query.OPTIONS?.SORT, ret);
 		}
 
 		return ret;
