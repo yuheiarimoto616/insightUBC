@@ -4,11 +4,6 @@ export enum Key {
 	key = "key"
 }
 
-export enum Anykey {
-	key = "key",
-	applykey = "applykey"
-}
-
 export interface Query {
 	BODY?: Body;
 	OPTIONS?: Options;
@@ -45,28 +40,28 @@ export interface NEGATION {
 	}
 }
 
-export interface ApplyRule {
-	APPLYKEY: string; // ANYKEY = KEY | APPLYKEY
-	APPKYTOKEN: string; // "MAX" | "MIN" | "AVG" | "COUNT | "SUM"
-	KEY: Key; // KEY = mkey | skey
-}
-
-export interface Transformations {
-	GROUP: Key[];
-	APPLY: ApplyRule[];
-}
-
-// TODO Check for the ORDERS, cannot be both at once.
-export interface Sort {
-	ORDER1?: {
-		DIRECTION: string;
-		KEYS: Anykey[];
-	}
-	ORDER2?: string;
-}
-
 export interface Options {
 	// TODO Check COLUMNS for applykey value as well.
 	COLUMNS: string[];
 	SORT?: Sort;
+}
+
+// TODO Check for the ORDERS, cannot be both at once.
+export interface Sort {
+	DIR_ORDER?: {
+		dir: string;
+		keys: string[];
+	}
+	ORDER?: string;
+}
+
+export interface Transformations {
+	GROUP: string[];
+	APPLY: ApplyRule[];
+}
+
+export interface ApplyRule {
+	applykey: string; // ANYKEY = KEY | APPLYKEY
+	APPKYTOKEN: string; // "MAX" | "MIN" | "AVG" | "COUNT | "SUM"
+	KEY: string; // KEY = mkey | skey
 }

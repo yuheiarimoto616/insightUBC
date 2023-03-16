@@ -1,0 +1,15 @@
+{
+	"title": "should be rejected trans empty object",
+	"input": {
+		"WHERE": {},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_title",
+				"overallAvg"
+			]
+		},
+		"TRANSFORMATIONS": {}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

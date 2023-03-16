@@ -1,0 +1,15 @@
+{
+	"title": "should be rejected trans wrong typed",
+	"input": {
+		"WHERE": {},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_title",
+				"overallAvg"
+			]
+		},
+		"TRANSFORMATIONS": "avg"
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}
