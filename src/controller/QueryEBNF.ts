@@ -7,6 +7,7 @@ export enum Key {
 export interface Query {
 	BODY?: Body;
 	OPTIONS?: Options;
+	TRANSFORMATIONS?: Transformations;
 }
 
 export interface Body {
@@ -40,6 +41,27 @@ export interface NEGATION {
 }
 
 export interface Options {
+	// TODO Check COLUMNS for applykey value as well.
 	COLUMNS: string[];
+	SORT?: Sort;
+}
+
+// TODO Check for the ORDERS, cannot be both at once.
+export interface Sort {
+	DIR_ORDER?: {
+		dir: string;
+		keys: string[];
+	}
 	ORDER?: string;
+}
+
+export interface Transformations {
+	GROUP: string[];
+	APPLY: ApplyRule[];
+}
+
+export interface ApplyRule {
+	applykey: string; // ANYKEY = KEY | APPLYKEY
+	APPKYTOKEN: string; // "MAX" | "MIN" | "AVG" | "COUNT | "SUM"
+	KEY: string; // KEY = mkey | skey
 }

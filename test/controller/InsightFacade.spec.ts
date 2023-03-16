@@ -554,6 +554,54 @@ describe("InsightFacade", function () {
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
+		// TODO: delete
+		// it ("should resolve with where", async function () {
+		// 	await facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms);
+		// 	const result = facade.performQuery({
+		// 		WHERE: {
+		// 			AND: [
+		// 				{
+		// 					IS: {
+		// 						rooms_furniture: "*Tables*"
+		// 					}
+		// 				},
+		// 				{
+		// 					GT: {
+		// 						rooms_seats: 300
+		// 					}
+		// 				}
+		// 			]
+		// 		},
+		// 		OPTIONS: {
+		// 			COLUMNS: [
+		// 				"rooms_shortname",
+		// 				"maxSeats"
+		// 			],
+		// 			ORDER: {
+		// 				dir: "DOWN",
+		// 				keys: []
+		// 			}
+		// 		},
+		// 		TRANSFORMATIONS: {
+		// 			GROUP: [
+		// 				"rooms_shortname"
+		// 			],
+		// 			APPLY: [
+		// 				{
+		// 					maxSeats: {
+		// 						MAX: "rooms_seats"
+		// 					}
+		// 				}
+		// 			]
+		// 		}
+		// 	});
+		//
+		// 	let expected = [{sections_dept: "hist", sections_id: "256", sections_avg: 74.65}];
+		//
+		// 	return expect(result).to.eventually.be.deep.equal(expected);
+		// });
+
+
 		it ("should resolve with empty where", async function () {
 			let content = getContentFromArchives("singleSection.zip");
 			await facade.addDataset("sections", content, InsightDatasetKind.Sections);

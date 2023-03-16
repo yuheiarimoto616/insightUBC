@@ -1,0 +1,15 @@
+{
+	"title": "should be rejected excess key without trans",
+	"input": {
+		"WHERE": {},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_title",
+				"overallAvg"
+			]
+		},
+		"AND": {}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}
