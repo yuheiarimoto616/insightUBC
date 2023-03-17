@@ -74,7 +74,6 @@ export default class TransformationsParserValidator extends ParserValidator {
 		}
 
 		let applyKey = Object.keys(from)[0];
-		// TODO: check if trim or not
 		if (!this.applykey.test(applyKey)) {
 			return null;
 		}

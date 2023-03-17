@@ -1,8 +1,21 @@
-import {Body, Filter, LOGICCOMPARISON, MCOMPARISON, NEGATION, Options, Query, SCOMPARISON} from "./QueryEBNF";
+import {
+	ApplyRule,
+	Body,
+	Filter,
+	LOGICCOMPARISON,
+	MCOMPARISON,
+	NEGATION,
+	Options,
+	Query,
+	SCOMPARISON, Sort,
+	Transformations
+} from "./QueryEBNF";
 import Section from "./Section";
 import {InsightError, InsightResult, ResultTooLargeError} from "./IInsightFacade";
 import {strict} from "assert";
 import {DataContent} from "./DataContent";
+import Decimal from "decimal.js";
+import WhereExecutor from "./WhereExecutor";
 
 export default class QueryExecutor {
 	private query: Query;
@@ -12,115 +25,145 @@ export default class QueryExecutor {
 
 	public executeQuery(content: DataContent[]): InsightResult[] {
 		let where = this.query.BODY as Body;
-		let matchedSec: DataContent[] = this.executeWhere(where, content);
+		let whereExecutor = new WhereExecutor();
+		let matchedSec: DataContent[] = whereExecutor.executeWhere(this.query, where, content);
 
-		let options = this.query.OPTIONS as Options;
-		let ret: InsightResult[] = this.executeOptions(options, matchedSec);
-
-		return ret;
-	}
-
-	private executeWhere(where: Body, content: DataContent[]): DataContent[] {
-		let ret: DataContent[] = [];
-		if (where.WHERE === null) {
-			if (content.length > 5000) {
-				throw new ResultTooLargeError("result has more than 5000");
-			}
-			return content;
-		}
-
-		for (let c of content) {
-			if (this.executeFilter(c, where.WHERE)) {
-				if (ret.length >= 5000) {
-					throw new ResultTooLargeError("result has more than 5000");
-				}
-				ret.push(c);
-			}
-		}
-
-		return ret;
-	}
-
-	private executeFilter(c: DataContent, where: Filter): boolean {
-		if (this.instanceOfLogicCom(where)) {
-			return this.executeLogicCom(c, where);
-		}
-
-		if (this.instanceOfMCom(where)) {
-			return this.executeMcom(c, where);
-		}
-
-		if (this.instanceOfSCom(where)) {
-			return this.executeScom(c, where);
-		}
-
-		if (this.instanceOfNegation(where)) {
-			return this.executeNegation(c, where);
-		}
-
-		return false;
-	}
-
-	private executeLogicCom(c: DataContent, lcom: LOGICCOMPARISON): boolean {
-		if (lcom.LOGIC === "AND") {
-			for (let filter of lcom.FILTER_LIST) {
-				if (!this.executeFilter(c, filter)) {
-					return false;
-				}
-			}
-			return true;
-		} else {
-			for (let filter of lcom.FILTER_LIST) {
-				if (this.executeFilter(c, filter)) {
-					return true;
-				}
-			}
-			return false;
-		}
-	}
-
-	private executeMcom(c: DataContent, mcom: MCOMPARISON): boolean {
-		let sectionField = c.getSectionMField(mcom.mkey);
-		// TODO: test
-		if (sectionField === null) {
-			throw new InsightError("Wrong DataContent type");
-		}
-		if (mcom.MCOMPARATOR === "LT") {
-			return mcom.num > sectionField;
-		} else if (mcom.MCOMPARATOR === "GT") {
-			return mcom.num < sectionField;
-		} else {
-			return mcom.num === sectionField;
-		}
-	}
-
-	// TODO: Fix wildcards
-	private executeScom(c: DataContent, scom: SCOMPARISON): boolean {
-		let sectionField = c.getSectionSField(scom.IS.skey);
-		let target = scom.IS.inputString;
-		// TODO: test
-		if (sectionField === null) {
-			throw new InsightError("Wrong DataContent type");
-		}
-		if (target.startsWith("*") && target.endsWith("*")) {
-			return sectionField.includes(target.substring(1, target.length - 1));
-		} else if (target.endsWith("*")) {
-			return sectionField.startsWith(target.substring(0,  target.length - 1));
-		} else if (target.startsWith("*")) {
-			return sectionField.endsWith(target.substring(1));
-		} else {
-			return sectionField === target;
-		}
-	}
-
-	private executeNegation(c: DataContent, neg: NEGATION) {
-		return !this.executeFilter(c, neg.NOT.FILTER);
-	}
-
-	private executeOptions(options: Options, content: DataContent[]): InsightResult[] {
 		let ret: InsightResult[] = [];
-		let cols: string[] = options.COLUMNS;
+		let options = this.query.OPTIONS as Options;
 
+		if (this.query.TRANSFORMATIONS !== undefined) {
+			let trans = this.query.TRANSFORMATIONS as Transformations;
+			ret = this.executeTransformation(trans, matchedSec);
+		} else {
+			ret = this.executeColumns(options.COLUMNS, matchedSec);
+		}
+
+		if (options.SORT !== undefined) {
+			ret = this.executeSort(options.SORT, ret);
+		}
+
+		return ret;
+	}
+
+	private executeTransformation(transformation: Transformations, content: DataContent[]): InsightResult[] {
+		let ret: InsightResult[] = [];
+
+		let group: string[] = transformation.GROUP;
+		let groupedSec = this.executeGroup(group,content);
+		let apply: ApplyRule[] = transformation.APPLY;
+		ret = this.executeApply(apply, group, groupedSec);
+
+		return ret;
+	}
+
+	public executeGroup(group: string[], contents: DataContent[]): DataContent[][] {
+		let transHash: {[key: string]: any[]} = {};
+		for (let c of contents) {
+			let mapKey = "";
+			for (let g of group) {
+				let dataKey = g.split("_")[1];
+				let key = c.getSectionField(dataKey);
+
+				if (key == null) {
+					throw new InsightError("Datatype and Field Mismatch");
+				}
+
+				mapKey += key + " ";
+			}
+
+			if (mapKey in transHash) {
+				transHash[mapKey].push(c);
+			} else {
+				if (Object.keys(transHash).length >= 5000) {
+					throw new ResultTooLargeError("Result has more than 5000 elements");
+				}
+				transHash[mapKey] = [c];
+			}
+		}
+
+		let ret: DataContent[][] = [];
+		for (let key in transHash) {
+			ret.push(transHash[key]);
+		}
+
+		return ret;
+	}
+
+	public executeApply(appRule: ApplyRule[], group: string[] , data: DataContent[][]) {
+		let ret: InsightResult[] = [];
+		for (let d of data) {
+			let insightResult: InsightResult = {};
+			for (let key of group) {
+				let value = d[0].getSectionField(key.split("_")[1]);
+				if (value === null) {
+					throw new InsightError("DataType and field mismatch");
+				}
+				insightResult[key] = value;
+			}
+
+			for (let rule of appRule) {
+				let key = rule.applykey;
+				let value = this.applyKey(rule.APPKYTOKEN, rule.KEY, d);
+				insightResult[key] = value;
+			}
+
+			ret.push(insightResult);
+		}
+
+		for (let item of ret) {
+			for (let key of Object.keys(item)) {
+				if (!this.query.OPTIONS?.COLUMNS.includes(key)) {
+					delete item[key];
+				}
+			}
+		}
+
+		return ret;
+	}
+
+	private applyKey(token: string, key: string, data: DataContent[]) {
+		let keyExtracted = data.map((d) => d.getSectionField(key.split("_")[1]));
+		if (keyExtracted[0] === null) {
+			throw new InsightError("Key DataType mismatch");
+		}
+
+		let ret;
+		if (token === "MAX") {
+			ret = Math.max(...keyExtracted);
+		} else if (token === "MIN") {
+			ret = Math.min(...keyExtracted);
+		} else if (token === "AVG") {
+			let total = new Decimal(0);
+			for (let num of keyExtracted) {
+				num = new Decimal(num);
+				total = Decimal.add(total, num);
+			}
+
+			let avg = total.toNumber() / keyExtracted.length;
+			ret = Number(avg.toFixed(2));
+		} else if (token === "SUM") {
+			let total = new Decimal(0);
+			for (let num of keyExtracted) {
+				num = new Decimal(num);
+				total = Decimal.add(total, num);
+			}
+
+			ret = total.toFixed(2);
+		} else { // token === "COUNT"
+			let count = new Map<any, number>();
+			for (let value of keyExtracted) {
+				if (!count.has(value)) {
+					count.set(value, 1);
+				}
+			}
+
+			ret = count.size;
+		}
+		return ret;
+	}
+
+	private executeColumns(cols: string[], content: DataContent[]): InsightResult[] {
+		let ret: InsightResult[] = [];
 		for (let s of content) {
 			let insightResult: InsightResult = {};
 			for (let key of cols) {
@@ -132,42 +175,51 @@ export default class QueryExecutor {
 			}
 			ret.push(insightResult);
 		}
-
-		if (this.query.OPTIONS?.SORT !== undefined) {
-			if (this.query.OPTIONS.SORT.ORDER !== undefined) {
-				ret = this.orderQuery(this.query.OPTIONS?.SORT?.ORDER, ret);
-			}
-		}
-
 		return ret;
 	}
 
-	// string -> alphabetical ; number -> ascending
-	public orderQuery(order: string, result: InsightResult[]): InsightResult[] {
-		if (typeof result[0][order] === "string") {
-			// got idea from https://stackoverflow.com/questions/6712034/sort-array-by-firstname-alphabetically-in-javascript
-			result.sort((a, b) =>
-				(a[order] as string).localeCompare(b[order] as string));
-		} else {
-			result.sort((a, b) => ((a[order] as number) - (b[order] as number)));
+	private executeSort(sort: Sort, content: InsightResult[]): InsightResult[] {
+		if (sort.ORDER) {
+			const key = sort.ORDER;
+			content.sort((a, b) => {
+				if (a[key] < b[key]) {
+					return -1;
+				} else if (a[key] > b[key]) {
+					return 1;
+				} else {
+					return 0;
+				}
+			});
+		} else if (sort.DIR_ORDER) {
+			const dir = sort.DIR_ORDER.dir;
+			const keys = sort.DIR_ORDER.keys;
+			content.sort((a, b) => {
+				let cmp = 0;
+				for (let key of keys) {
+					if (a[key] < b[key]) {
+						cmp = -1;
+						break;
+					} else if (a[key] > b[key]) {
+						cmp = 1;
+						break;
+					}
+				}
+				return dir === "DOWN" ? -cmp : cmp;
+			});
 		}
-
-		return result;
+		return content;
 	}
 
-	public instanceOfLogicCom (object: any): object is LOGICCOMPARISON {
-		return "LOGIC" in object;
-	}
-
-	public instanceOfMCom (object: any): object is MCOMPARISON {
-		return "MCOMPARATOR" in object;
-	}
-
-	public instanceOfSCom (object: any): object is SCOMPARISON {
-		return "IS" in object;
-	}
-
-	public instanceOfNegation (object: any): object is NEGATION {
-		return "NOT" in object;
-	}
+	// // string -> alphabetical ; number -> ascending
+	// public orderQuery(order: string, result: InsightResult[]): InsightResult[] {
+	// 	if (typeof result[0][order] === "string") {
+	// 			// got idea from https://stackoverflow.com/questions/6712034/sort-array-by-firstname-alphabetically-in-javascript
+	// 		result.sort((a, b) =>
+	// 			(a[order] as string).localeCompare(b[order] as string));
+	// 	} else {
+	// 		result.sort((a, b) => ((a[order] as number) - (b[order] as number)));
+	// 	}
+	//
+	// 	return result;
+	// }
 }

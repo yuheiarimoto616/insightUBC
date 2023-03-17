@@ -15,7 +15,6 @@ export default class QueryParserValidator extends ParserValidator{
 
 		let query = q as any;
 
-		// TODO: check if this was the cause; remove
 		if (!(Object.keys(query).length === 2 || Object.keys(query).length === 3)) {
 			return false;
 		}

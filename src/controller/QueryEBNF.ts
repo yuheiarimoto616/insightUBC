@@ -61,7 +61,7 @@ export interface Transformations {
 }
 
 export interface ApplyRule {
-	applykey: string; // ANYKEY = KEY | APPLYKEY
+	applykey: string;
 	APPKYTOKEN: string; // "MAX" | "MIN" | "AVG" | "COUNT | "SUM"
 	KEY: string; // KEY = mkey | skey
 }
