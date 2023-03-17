@@ -12,6 +12,9 @@ import {folderTest} from "@ubccpsc310/folder-test";
 import {expect, use} from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {clearDisk, getContentFromArchives} from "../TestUtil";
+import QueryExecutor from "../../src/controller/QueryExecutor";
+import {ApplyRule, Query} from "../../src/controller/QueryEBNF";
+import Section from "../../src/controller/Section";
 
 use(chaiAsPromised);
 
@@ -104,6 +107,33 @@ describe("InsightFacade", function () {
 		// costructor
 		// rooms
 		it ("should resolve with data successfully loaded to memory with roomsDataset", async function () {
+			// let query: Query = {};
+			// let executor = new QueryExecutor(query);
+			// let sec1 = new Section("1", "1", "310", "a", "cpsc", 1, 90, 1, 1, 1);
+			// let sec2 = new Section("1", "1", "310", "a", "cpsc", 12, 90, 1, 1, 1,);
+			// let sec3 = new Section("2", "2", "310", "a", "cpsc", 1, 95, 1, 1, 1,);
+			// let sec4 = new Section("1", "1", "210", "a", "cpsc", 1, 74, 1, 1, 1,);
+			// let sec5 = new Section("2", "2", "210", "a", "cpsc", 1, 78, 1, 1, 1,);
+			// let data = [];
+			// data.push(sec1);
+			// data.push(sec2);
+			// data.push(sec3);
+			// data.push(sec4);
+			// data.push(sec5);
+			//
+			// let ret = executor.executeGroup(["sections_title"], data);
+			// let rules: ApplyRule[] = [{
+			// 	applykey: "overallAvg",
+			// 	APPKYTOKEN: "AVG",
+			// 	KEY: "sections_avg"
+			// },
+			// {
+			// 	applykey: "sum",
+			// 	APPKYTOKEN: "SUM",
+			// 	KEY: "sections_avg"
+			// }];
+			// let processed = executor.executeApply(rules, ["sections_title"], ret);
+
 			await facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms);
 
 			let facade2 = new InsightFacade();
@@ -554,44 +584,14 @@ describe("InsightFacade", function () {
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		// TODO: delete
 		// it ("should resolve with where", async function () {
-		// 	await facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms);
+		// 	await facade.addDataset("sections", small, InsightDatasetKind.Sections);
 		// 	const result = facade.performQuery({
-		// 		WHERE: {
-		// 			AND: [
-		// 				{
-		// 					IS: {
-		// 						rooms_furniture: "*Tables*"
-		// 					}
-		// 				},
-		// 				{
-		// 					GT: {
-		// 						rooms_seats: 300
-		// 					}
-		// 				}
-		// 			]
-		// 		},
+		// 		WHERE: {},
 		// 		OPTIONS: {
 		// 			COLUMNS: [
-		// 				"rooms_shortname",
-		// 				"maxSeats"
-		// 			],
-		// 			ORDER: {
-		// 				dir: "DOWN",
-		// 				keys: []
-		// 			}
-		// 		},
-		// 		TRANSFORMATIONS: {
-		// 			GROUP: [
-		// 				"rooms_shortname"
-		// 			],
-		// 			APPLY: [
-		// 				{
-		// 					maxSeats: {
-		// 						MAX: "rooms_seats"
-		// 					}
-		// 				}
+		// 				"sections_dept",
+		// 				"sections_id"
 		// 			]
 		// 		}
 		// 	});
