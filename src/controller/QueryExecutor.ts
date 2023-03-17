@@ -148,7 +148,7 @@ export default class QueryExecutor {
 				total = Decimal.add(total, num);
 			}
 
-			ret = total.toFixed(2);
+			ret = Number(total.toFixed(2));
 		} else { // token === "COUNT"
 			let count = new Map<any, number>();
 			for (let value of keyExtracted) {
