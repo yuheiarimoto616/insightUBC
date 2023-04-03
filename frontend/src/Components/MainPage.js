@@ -1,6 +1,6 @@
 import React from 'react'
 import { Stack } from "@mui/material";
-import Feed from "./Feed";
+import Feed from "./SearchContainer";
 import Sidebar from "./Sidebar";
 import Navbar from './Navbar';
 
@@ -14,7 +14,6 @@ const MainPage = () => {
             <Feed/>
         </Stack>
     </div>
-    
   )
 }
 
