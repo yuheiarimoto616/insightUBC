@@ -45,7 +45,6 @@ export default abstract class ParserValidator {
 		if (anyKey.includes("_")) {
 			return this.validateKey(anyKey, Key.key);
 		} else {
-			// TODO: check if trim or not
 			if (!this.applykey.test(anyKey)) {
 				return false;
 			}
