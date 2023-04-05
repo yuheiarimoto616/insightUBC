@@ -113,6 +113,28 @@ describe("Server", () => {
 		}
 	});
 
+	it("PUT test3", async () => {
+		const file = fs.readFileSync("test/resources/archives/campus.zip");
+		try {
+			return request("http://localhost:4321")
+				.put("/dataset/rooms/rooms")
+				.send(file)
+				.set("Content-Type", "application/x-zip-compressed")
+				.then((res: Response) => {
+					expect(res.status).to.be.equal(200);
+					// more assertions here
+					expect(res.body.result).to.have.members(["sections", "mysections", "rooms"]);
+				})
+				.catch((err) => {
+					console.log(err.message);
+					// some logging here please!
+					expect.fail();
+				});
+		} catch (err) {
+			// and some more logging here!
+		}
+	});
+
 	it("POST test for courses dataset", async () => {
 		try {
 			return request("http://localhost:4321")
@@ -171,6 +193,25 @@ describe("Server", () => {
 					expect(res.status).to.be.equal(200);
 					// more assertions here
 					expect(res.body.result).to.be.equal("mysections");
+				})
+				.catch((err) => {
+					console.log(err.message);
+					// some logging here please
+					expect.fail();
+				});
+		} catch (err) {
+			// and some more logging here!
+		}
+	});
+
+	it ("DELETE test3", async () => {
+		try {
+			return request("http://localhost:4321")
+				.delete("/dataset/rooms")
+				.then((res: Response) => {
+					expect(res.status).to.be.equal(200);
+					// more assertions here
+					expect(res.body.result).to.be.equal("rooms");
 				})
 				.catch((err) => {
 					console.log(err.message);
