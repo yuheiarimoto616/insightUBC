@@ -28,7 +28,7 @@ const Sidebar = () => {
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
-					<ListItemButton component="a" href="update">
+					<ListItemButton component="a" href="filter_profs">
 						<ListItemIcon>
 							<SchoolIcon />
 						</ListItemIcon>
@@ -36,7 +36,7 @@ const Sidebar = () => {
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
-					<ListItemButton component="a" href="select">
+					<ListItemButton component="a" href="filter_depts">
 						<ListItemIcon>
 							<GradingIcon />
 						</ListItemIcon>
@@ -44,7 +44,7 @@ const Sidebar = () => {
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
-					<ListItemButton component="a" href="projection">
+					<ListItemButton component="a" href="order">
 						<ListItemIcon>
 							<RuleIcon />
 						</ListItemIcon>
@@ -52,7 +52,7 @@ const Sidebar = () => {
 					</ListItemButton>
 				</ListItem>
 				<ListItem disablePadding>
-					<ListItemButton component="a" href="home">
+					<ListItemButton component="a" href="order">
 						<ListItemIcon>
 							<DarkModeIcon />
 						</ListItemIcon>
