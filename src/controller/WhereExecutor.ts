@@ -75,7 +75,6 @@ export default class WhereExecutor {
 
 	private executeMcom(c: DataContent, mcom: MCOMPARISON): boolean {
 		let sectionField = c.getSectionMField(mcom.mkey);
-		// TODO: test
 		if (sectionField === null) {
 			throw new InsightError("Wrong DataContent type");
 		}
@@ -91,7 +90,6 @@ export default class WhereExecutor {
 	private executeScom(c: DataContent, scom: SCOMPARISON): boolean {
 		let sectionField = c.getSectionSField(scom.IS.skey);
 		let target = scom.IS.inputString;
-		// TODO: test
 		if (sectionField === null) {
 			throw new InsightError("Wrong DataContent type");
 		}

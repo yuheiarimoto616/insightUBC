@@ -1,16 +1,21 @@
 import express, {Application, Request, Response} from "express";
 import * as http from "http";
 import cors from "cors";
+import {IInsightFacade, InsightDatasetKind, InsightError, NotFoundError} from "../controller/IInsightFacade";
+import InsightFacade from "../controller/InsightFacade";
+import {readJsonSync} from "fs-extra";
 
 export default class Server {
 	private readonly port: number;
 	private express: Application;
 	private server: http.Server | undefined;
+	private static insightFacade: IInsightFacade;
 
 	constructor(port: number) {
 		console.info(`Server::<init>( ${port} )`);
 		this.port = port;
 		this.express = express();
+		Server.insightFacade = new InsightFacade();
 
 		this.registerMiddleware();
 		this.registerRoutes();
@@ -86,7 +91,54 @@ export default class Server {
 		this.express.get("/echo/:msg", Server.echo);
 
 		// TODO: your other endpoints should go here
+		this.express.put("/dataset/:id/:kind", Server.addDatasetRequest);
+		this.express.delete("/dataset/:id", Server.removeDatasetRequest);
+		this.express.post("/query", Server.performQueryRequest);
+		this.express.get("/dataset", Server.listDatasetRequest);
+	}
 
+	private static async addDatasetRequest(req: Request, res: Response) {
+		console.log(`Server::addDatasetRequest(..) - params: ${JSON.stringify(req.params)}`);
+		const ds = req.body.toString("base64");
+		let kind: InsightDatasetKind;
+		if (req.params.kind === "sections") {
+			kind = InsightDatasetKind.Sections;
+		} else {
+			kind = InsightDatasetKind.Rooms;
+		}
+		Server.insightFacade.addDataset(req.params.id, ds, kind).then((result) => {
+			res.status(200).json({result: result});
+		}).catch((err) => {
+			res.status(400).json({error: err.message});
+		});
+	}
+
+	private static removeDatasetRequest(req: Request, res: Response) {
+		console.log(`Server::removeDatasetRequest(..) - params: ${JSON.stringify(req.params)}`);
+		Server.insightFacade.removeDataset(req.params.id).then((result) => {
+			res.status(200).json({result: result});
+		}).catch((err) => {
+			if (err instanceof InsightError) {
+				res.status(400).json({result: err.message});
+			} else {
+				res.status(404).json({result: err.message});
+			}
+		});
+	}
+
+	private static performQueryRequest(req: Request, res: Response) {
+		console.log(`Server::performQueryRequest(..) - params: ${JSON.stringify(req.params)}`);
+		Server.insightFacade.performQuery(req.body).then((result) => {
+			res.status(200).json({result: result});
+		}).catch((err) => {
+			res.status(400).json({result: err.message});
+		});
+	}
+
+	private static listDatasetRequest(req: Request, res: Response) {
+		Server.insightFacade.listDatasets().then((result) => {
+			res.status(200).json({result: result});
+		});
 	}
 
 	/**
