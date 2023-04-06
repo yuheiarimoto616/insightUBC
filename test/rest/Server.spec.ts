@@ -61,6 +61,28 @@ describe("Server", () => {
 		}
 	});
 
+	it("PUT test for rooms", async () => {
+		const file = fs.readFileSync("test/resources/archives/campus.zip");
+		try {
+			return request("http://localhost:4321")
+				.put("/dataset/campus/rooms")
+				.send(file)
+				.set("Content-Type", "application/x-zip-compressed")
+				.then((res: Response) => {
+					expect(res.status).to.be.equal(200);
+					// more assertions here
+					expect(res.body.result).to.have.members(["campus"]);
+				})
+				.catch((err) => {
+					console.log(err.message);
+					// some logging here please!
+					expect.fail();
+				});
+		} catch (err) {
+			// and some more logging here!
+		}
+	});
+
 	it("PUT test for courses dataset", async () => {
 		const file = fs.readFileSync("test/resources/archives/pair.zip");
 		try {

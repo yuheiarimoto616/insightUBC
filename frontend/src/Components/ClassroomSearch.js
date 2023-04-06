@@ -1,4 +1,4 @@
-import {Autocomplete, Box, Button, Container, Stack, TextField} from "@mui/material";
+import {Alert, Autocomplete, Box, Button, Collapse, Container, Stack, TextField} from "@mui/material";
 import React from "react";
 import {styled} from "@mui/material/styles";
 import Table from "@mui/material/Table";
@@ -31,88 +31,153 @@ const StyledTableRow = styled(TableRow)(({theme}) => ({
 	},
 }));
 
-const options = ["2022W", "2021W"];
-
-function createData_Teams(team_id, team_name, country, player_roster, number_of_players) {
-	return {team_id, team_name, country, player_roster, number_of_players};
-}
-
-const rows_Teams = [
-	createData_Teams(1, "Canucks", "Canada", "Bo Horvat, Daniel Sedin, Roberto Luongo", 3),
-	createData_Teams(2, "Raptors", "Canada", "Michael Jordan", 1),
-	createData_Teams(3, "Angels", "United States", "Ohtani Shohei, Mike Trout, Tyler Anderson, Hunter Renfroe", 4),
-	createData_Teams(4, "Whitecaps", "Canada", "Lionel Messi, Cristiano Ronaldo", 2),
-	createData_Teams(5, "Mariners", "United States", "Julio Rodriguez, Jarred Kalenic", 2),
+const furnitureTypeOptions = [
+	"Classroom-Fixed Tables/Movable Chairs",
+	"Classroom-Movable Tables & Chairs",
+	"Classroom-Moveable Tables & Chairs",
+	"Classroom-Fixed Tablets",
+	"Classroom-Fixed Tables/Fixed Chairs",
+	"Classroom-Fixed Tables/Moveable Chairs",
+	"Classroom-Movable Tablets",
+	"Classroom-Hybrid Furniture",
+	"Classroom-Learn Lab"
 ];
 
+const capacityOptions = [];
+
 function ClassroomSearch() {
-	const [value, setValue] = React.useState(options[0]);
-	const [inputValue, setInputValue] = React.useState("");
+	// https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+	async function postData(url = "", data = {}) {
+		// Default options are marked with *
+		const response = await fetch(url, {
+			method: "POST", // *GET, POST, PUT, DELETE, etc.
+			mode: "cors", // no-cors, *cors, same-origin
+			cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+			credentials: "same-origin", // include, *same-origin, omit
+			headers: {
+				"Content-Type": "application/json",
+				// 'Content-Type': 'application/x-www-form-urlencoded',
+			},
+			redirect: "follow", // manual, *follow, error
+			referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+			body: JSON.stringify(data), // body data type must match "Content-Type" header
+		});
+		return response.json(); // parses JSON response into native JavaScript objects
+	}
+
+	const [open, setOpen] = React.useState(false);
+	const [errorMsg, setErrorMsg] = React.useState("");
+
+	const [value_furniture, setValue_furniture] = React.useState(furnitureTypeOptions[0]);
+	const [value_capacity, setValue_capacity] = React.useState();
+
+	const [inputValue_furniture, setInputValue_furniture] = React.useState("");
+	const [inputValue_capacity, setInputValue_capacity] = React.useState("");
+
+	const [value_result, setValue_result] = React.useState([]);
+
+	async function getClassrooms() {
+		if (!/^\d+$/.test(String(value_capacity))) {
+			setErrorMsg("Year can't contain non-numeric letters! Try again!")
+			setOpen(true);
+			return;
+		}
+
+		let query = {
+			WHERE: {
+				AND: [
+					{
+						IS: {
+							campus_furniture: value_furniture
+						}
+					},
+					{
+						GT: {
+							campus_seats: Number(value_capacity)
+						}
+					}
+				]
+			},
+			OPTIONS: {
+				COLUMNS: [
+					"campus_fullname",
+					"campus_name",
+					"campus_address",
+					"campus_seats",
+					"campus_type",
+					"campus_href"
+				],
+				ORDER: {
+					dir: "UP",
+					keys: [
+						"campus_seats"
+					]
+				}
+			}
+		};
+
+		console.log(JSON.stringify(query));
+
+		postData("http://localhost:4321/query", query).then((data) => {
+			console.log(JSON.stringify(data));
+			let res = data.result;
+			if (res.length === 0) {
+				setErrorMsg("No Classroom Matched!")
+				setOpen(true);
+			}
+			setValue_result(data.result);
+		});
+	}
 
 	return (
 		<Box bgcolor="skyblue" flex={4} p={2}>
+			<Box sx={{ width: '100%' }}>
+				<Collapse in={open}>
+					<Alert
+						severity="error"
+						onClose={() => setOpen(false)}
+						sx={{ mb: 2 }}
+					>
+						{errorMsg}
+					</Alert>
+				</Collapse>
+			</Box>
 			<Typography variant="h4" gutterBottom paddingTop={4}>
 				View Classroom Insights
 			</Typography>
 			<Container sx={{width: "100%", display: "flex", justifyContent: "center"}}>
 				<Stack spacing={2} direction="row" useFlexGap flexWrap="wrap">
 					<Autocomplete
-						value={value}
+						value={value_capacity}
 						onChange={(event, newValue) => {
-							setValue(newValue);
+							setValue_capacity(newValue);
 						}}
-						inputValue={inputValue}
+						freeSolo={true}
+						inputValue={inputValue_capacity}
 						onInputChange={(event, newInputValue) => {
-							setInputValue(newInputValue);
-						}}
-						id="Year_Autocomplete"
-						options={options}
-						sx={{width: 200}}
-						renderInput={(params) => <TextField {...params} label="Short Name" />}
-					/>
-					<Autocomplete
-						value={value}
-						onChange={(event, newValue) => {
-							setValue(newValue);
-						}}
-						inputValue={inputValue}
-						onInputChange={(event, newInputValue) => {
-							setInputValue(newInputValue);
-						}}
-						id="Subject_Autocomplete"
-						options={options}
-						sx={{width: 200}}
-						renderInput={(params) => <TextField {...params} label="Room Number" />}
-					/>
-					<Autocomplete
-						value={value}
-						onChange={(event, newValue) => {
-							setValue(newValue);
-						}}
-						inputValue={inputValue}
-						onInputChange={(event, newInputValue) => {
-							setInputValue(newInputValue);
+							setInputValue_capacity(newInputValue);
 						}}
 						id="Course_Autocomplete"
-						options={options}
+						options={capacityOptions}
 						sx={{width: 200}}
 						renderInput={(params) => <TextField {...params} label="Number of Seats" />}
 					/>
 					<Autocomplete
-						value={value}
+						value={value_furniture}
 						onChange={(event, newValue) => {
-							setValue(newValue);
+							setValue_furniture(newValue);
 						}}
-						inputValue={inputValue}
+						freeSolo={true}
+						inputValue={inputValue_furniture}
 						onInputChange={(event, newInputValue) => {
-							setInputValue(newInputValue);
+							setInputValue_furniture(newInputValue);
 						}}
 						id="Sections_Autocomplete"
-						options={options}
-						sx={{width: 200}}
+						options={furnitureTypeOptions}
+						sx={{width: 400}}
 						renderInput={(params) => <TextField {...params} label="Furniture Type" />}
 					/>
-					<Button variant="contained" endIcon={<SearchIcon />}>
+					<Button variant="contained" endIcon={<SearchIcon />} onClick = {getClassrooms}>
 						Submit
 					</Button>
 				</Stack>
@@ -125,23 +190,25 @@ function ClassroomSearch() {
 				<Table sx={{minWidth: 700}} aria-label="customized table">
 					<TableHead>
 						<TableRow>
-							<StyledTableCell>Average Grade</StyledTableCell>
-							<StyledTableCell align="right">Year Session</StyledTableCell>
-							<StyledTableCell align="right">Subject</StyledTableCell>
-							<StyledTableCell align="right">Course Number</StyledTableCell>
-							<StyledTableCell align="right">Sections</StyledTableCell>
+							<StyledTableCell align="right">Building</StyledTableCell>
+							<StyledTableCell align="right">Room Name</StyledTableCell>
+							<StyledTableCell align="right">Seats</StyledTableCell>
+							<StyledTableCell align="right">Type</StyledTableCell>
+							<StyledTableCell align="right">Address</StyledTableCell>
+							<StyledTableCell align="right">Link</StyledTableCell>
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{rows_Teams.map((rows_Teams) => (
-							<StyledTableRow key={rows_Teams.team_id}>
+						{value_result.map((value_result) => (
+							<StyledTableRow>
 								<StyledTableCell component="th" scope="row">
-									{rows_Teams.team_id}
+									{value_result.campus_fullname}
 								</StyledTableCell>
-								<StyledTableCell align="right">{rows_Teams.team_name}</StyledTableCell>
-								<StyledTableCell align="right">{rows_Teams.country}</StyledTableCell>
-								<StyledTableCell align="right">{rows_Teams.player_roster}</StyledTableCell>
-								<StyledTableCell align="right">{rows_Teams.number_of_players}</StyledTableCell>
+								<StyledTableCell align="right">{value_result.campus_name}</StyledTableCell>
+								<StyledTableCell align="right">{value_result.campus_seats}</StyledTableCell>
+								<StyledTableCell align="right">{value_result.campus_type}</StyledTableCell>
+								<StyledTableCell align="right">{value_result.campus_address}</StyledTableCell>
+								<StyledTableCell align="right">{value_result.campus_href}</StyledTableCell>
 							</StyledTableRow>
 						))}
 					</TableBody>

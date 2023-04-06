@@ -38,44 +38,11 @@ const options_subject = ["CPSC", "MATH", "CHEM", "BIOL", "PHYS"];
 const options_course_number = [110, 121, 210, 213, 221];
 const options_section = ["ALL", 101, 102, 104, 105];
 
-function createData_Teams(team_id, team_name, country, player_roster, number_of_players) {
-	return {team_id, team_name, country, player_roster, number_of_players};
-}
-
-const row = [];
-
 function CloseIcon(props) {
 	return null;
 }
 
 CloseIcon.propTypes = {fontSize: PropTypes.string};
-
-// function ErrorAlerts() {
-//
-// 	return (
-// 		<Box sx={{ width: '100%' }}>
-// 			<Collapse in={open}>
-// 				<Alert
-// 					action={
-// 						<IconButton
-// 							aria-label="close"
-// 							color="inherit"
-// 							size="small"
-// 							onClick={() => {
-// 								setOpen(false);
-// 							}}
-// 						>
-// 							<CloseIcon fontSize="inherit" />
-// 						</IconButton>
-// 					}
-// 					sx={{ mb: 2 }}
-// 				>
-// 					Year can't contain non-numeric letters!
-// 				</Alert>
-// 			</Collapse>
-// 		</Box>
-// 	);
-// }
 
 function GradeSearch() {
 
@@ -105,6 +72,7 @@ function GradeSearch() {
 	const [value_subject, setValue_subject] = React.useState(options_subject[0]);
 	const [value_course, setValue_course] = React.useState(options_course_number[0]);
 	const [value_section, setValue_section] = React.useState(options_section[0]);
+
 	const [inputValue_year_session, setInputValue_year_session] = React.useState("");
 	const [inputValue_subject, setInputValue_subject] = React.useState("");
 	const [inputValue_course, setInputValue_course] = React.useState("");
@@ -287,17 +255,6 @@ function GradeSearch() {
 							<StyledTableCell align="right">{value_result_subject}</StyledTableCell>
 							<StyledTableCell align="right">{value_result_course}</StyledTableCell>
 						</StyledTableRow>
-						{/*{rows_Teams.map((rows_Teams) => (*/}
-						{/*	<StyledTableRow key={rows_Teams.team_id}>*/}
-						{/*		<StyledTableCell component="th" scope="row">*/}
-						{/*			{rows_Teams.team_id}*/}
-						{/*		</StyledTableCell>*/}
-						{/*		<StyledTableCell align="right">{rows_Teams.team_name}</StyledTableCell>*/}
-						{/*		<StyledTableCell align="right">{rows_Teams.country}</StyledTableCell>*/}
-						{/*		<StyledTableCell align="right">{rows_Teams.player_roster}</StyledTableCell>*/}
-						{/*		<StyledTableCell align="right">{rows_Teams.number_of_players}</StyledTableCell>*/}
-						{/*	</StyledTableRow>*/}
-						{/*))}*/}
 					</TableBody>
 				</Table>
 			</TableContainer>
