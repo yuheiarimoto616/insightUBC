@@ -24,7 +24,7 @@ export default class Server {
 		 * by uncommenting the line below. This makes files in ./frontend/public
 		 * accessible at http://localhost:<port>/
 		 */
-		// this.express.use(express.static("./frontend/public"))
+		this.express.use(express.static("./frontend/public"));
 	}
 
 	/**
@@ -94,7 +94,7 @@ export default class Server {
 		this.express.put("/dataset/:id/:kind", Server.addDatasetRequest);
 		this.express.delete("/dataset/:id", Server.removeDatasetRequest);
 		this.express.post("/query", Server.performQueryRequest);
-		this.express.get("/dataset", Server.listDatasetRequest);
+		this.express.get("/datasets", Server.listDatasetRequest);
 	}
 
 	private static async addDatasetRequest(req: Request, res: Response) {

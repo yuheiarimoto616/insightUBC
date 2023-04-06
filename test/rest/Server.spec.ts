@@ -86,7 +86,7 @@ describe("Server", () => {
 	it ("GET test", async () => {
 		try {
 			return request("http://localhost:4321")
-				.get("/dataset")
+				.get("/datasets")
 				.then((res: Response) => {
 					expect(res.status).to.be.equal(200);
 					// more assertions here
