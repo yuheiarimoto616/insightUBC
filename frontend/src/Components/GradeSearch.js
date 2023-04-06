@@ -1,4 +1,4 @@
-import {Alert, Autocomplete, Box, Button, Container, Stack, TextField} from "@mui/material";
+import {Alert, Autocomplete, Box, Button, Collapse, Container, Stack, TextField} from "@mui/material";
 import React from "react";
 import {styled} from "@mui/material/styles";
 import Table from "@mui/material/Table";
@@ -10,6 +10,8 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import SearchIcon from "@mui/icons-material/Search";
+import IconButton from "@mui/material/IconButton";
+import * as PropTypes from "prop-types";
 
 const StyledTableCell = styled(TableCell)(({theme}) => ({
 	[`&.${tableCellClasses.head}`]: {
@@ -42,6 +44,39 @@ function createData_Teams(team_id, team_name, country, player_roster, number_of_
 
 const row = [];
 
+function CloseIcon(props) {
+	return null;
+}
+
+CloseIcon.propTypes = {fontSize: PropTypes.string};
+
+// function ErrorAlerts() {
+//
+// 	return (
+// 		<Box sx={{ width: '100%' }}>
+// 			<Collapse in={open}>
+// 				<Alert
+// 					action={
+// 						<IconButton
+// 							aria-label="close"
+// 							color="inherit"
+// 							size="small"
+// 							onClick={() => {
+// 								setOpen(false);
+// 							}}
+// 						>
+// 							<CloseIcon fontSize="inherit" />
+// 						</IconButton>
+// 					}
+// 					sx={{ mb: 2 }}
+// 				>
+// 					Year can't contain non-numeric letters!
+// 				</Alert>
+// 			</Collapse>
+// 		</Box>
+// 	);
+// }
+
 function GradeSearch() {
 
 	// https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
@@ -63,6 +98,9 @@ function GradeSearch() {
 		return response.json(); // parses JSON response into native JavaScript objects
 	}
 
+	const [open, setOpen] = React.useState(false);
+	const [errorMsg, setErrorMsg] = React.useState("");
+
 	const [value_year_session, setValue_year_session] = React.useState(options_year_session[0]);
 	const [value_subject, setValue_subject] = React.useState(options_subject[0]);
 	const [value_course, setValue_course] = React.useState(options_course_number[0]);
@@ -79,17 +117,22 @@ function GradeSearch() {
 	const [value_result_course, setValue_result_course] = React.useState();
 
 	async function getAvgGrade() {
-		// https://react-bootstrap.github.io/components/alerts/
-		// if (/\d/.test(value_year_session)) {
-		// 	render (
-		// 		<Alert variant="danger" dismissible>
-		// 			<Alert.Heading>Oh snap! You got an error!</Alert.Heading>
-		// 			<p>
-		// 				Year can't contain non-numeric letters!
-		// 			</p>
-		// 		</Alert>
-		// 	);
-		// }
+		https://react-bootstrap.github.io/components/alerts/
+		if (value_year_session === null || value_subject === null || value_course === null) {
+			setErrorMsg("Field cannot be empty!");
+			setOpen(true);
+			return;
+		}
+
+		if (!/^\d+$/.test(String(value_year_session))) {
+			setErrorMsg("Year can't contain non-numeric letters!")
+			setOpen(true);
+			return;
+		} else if (/\d/.test(String(value_subject))) {
+			setErrorMsg("Subject can't contain numbers!")
+			setOpen(true);
+			return;
+		}
 
 		const subject = String(value_subject).toLowerCase();
 
@@ -141,6 +184,12 @@ function GradeSearch() {
 
 		postData("http://localhost:4321/query", query).then((data) => {
 			console.log(JSON.stringify(data));
+			let res = data.result;
+			if (res.length === 0) {
+				setErrorMsg("Sorry data doesn't exist for the given inputs!")
+				setOpen(true);
+				return;
+			}
 			setValue_result_avg(data.result[0].yearAvg);
 			setValue_result_year(data.result[0].sections_year);
 			setValue_result_subject(data.result[0].sections_dept);
@@ -150,6 +199,17 @@ function GradeSearch() {
 
 	return (
 		<Box bgcolor="skyblue" flex={4} p={2}>
+			<Box sx={{ width: '100%' }}>
+				<Collapse in={open}>
+					<Alert
+						severity="error"
+						onClose={() => setOpen(false)}
+						sx={{ mb: 2 }}
+					>
+						{errorMsg}
+					</Alert>
+				</Collapse>
+			</Box>
 			<Typography variant="h4" gutterBottom paddingTop={4}>
 				View Grades By Section
 			</Typography>
@@ -222,10 +282,10 @@ function GradeSearch() {
 					</TableHead>
 					<TableBody>
 						<StyledTableRow key = "result">
-							<StyledTableCell aligh="center">{value_result_avg}</StyledTableCell>
-							<StyledTableCell aligh="right">{value_result_year}</StyledTableCell>
-							<StyledTableCell aligh="right">{value_result_subject}</StyledTableCell>
-							<StyledTableCell aligh="right">{value_result_course}</StyledTableCell>
+							<StyledTableCell component="th" scope="row">{value_result_avg}</StyledTableCell>
+							<StyledTableCell align="right">{value_result_year}</StyledTableCell>
+							<StyledTableCell align="right">{value_result_subject}</StyledTableCell>
+							<StyledTableCell align="right">{value_result_course}</StyledTableCell>
 						</StyledTableRow>
 						{/*{rows_Teams.map((rows_Teams) => (*/}
 						{/*	<StyledTableRow key={rows_Teams.team_id}>*/}
