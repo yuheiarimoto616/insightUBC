@@ -3,6 +3,14 @@
 This repository contains starter code for the class project.
 Please keep your repository private.
 
+### Frontend Demo Video Link
+
+## User Story 1:
+https://youtu.be/tQqPi4pOYe4
+
+## User Story 2: 
+https://youtu.be/W5mqotQyodg
+
 For information about the project, autotest, and the checkpoints, see the course webpage.
 
 ## Configuring your environment
