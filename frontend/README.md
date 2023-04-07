@@ -1,2 +1,4 @@
 ### Frontend Demo Video Link
-TODO: Add link to frontend demo video here
+
+## User Story 2: 
+https://youtu.be/W5mqotQyodg
