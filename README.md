@@ -1,4 +1,4 @@
-# CPSC 310 Project Repository
+# insightUBC
 ## Description
 This project is a web application where users can inquire about the average grades of courses at UBC and find rooms that meet their specific requirements.
 
