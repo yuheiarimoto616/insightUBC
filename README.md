@@ -1,17 +1,14 @@
 # CPSC 310 Project Repository
+## Description
+This project is a web application where users can inquire about the average grades of courses at UBC and find rooms that meet their specific requirements.
 
-This repository contains starter code for the class project.
-Please keep your repository private.
+## Frontend Demo Video Link
 
-### Frontend Demo Video Link
-
-## User Story 1:
+### User Story 1:
 https://youtu.be/tQqPi4pOYe4
 
-## User Story 2: 
+### User Story 2: 
 https://youtu.be/W5mqotQyodg
-
-For information about the project, autotest, and the checkpoints, see the course webpage.
 
 ## Configuring your environment
 
@@ -38,12 +35,3 @@ In the project folder:
 1. `yarn test` to run the test suite.
 
 1. `yarn pretty` to prettify your project code.
-
-## Running and testing from an IDE
-
-IntelliJ Ultimate should be automatically configured the first time you open the project (IntelliJ Ultimate is a free download through their students program)
-
-### License
-
-While the readings for this course are licensed using [CC-by-SA](https://creativecommons.org/licenses/by-sa/3.0/), **checkpoint descriptions and implementations are considered private materials**. Please do not post or share your project solutions. We go to considerable lengths to make the project an interesting and useful learning experience for this course. This is a great deal of work, and while future students may be tempted by your solutions, posting them does not do them any real favours. Please be considerate with these private materials and not pass them along to others, make your repos public, or post them to other sites online.
-
